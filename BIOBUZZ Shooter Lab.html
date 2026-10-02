@@ -1,0 +1,1349 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>BIOBUZZ Shooter Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a five-step lab notebook. Sticky step rail on top, one step visible at a time, tools inside each step. */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --field:#f7f9fb; --ink:#17202b; --muted:#5a6878; --line:#d3dae2;
+  --honey:#a86f00; --honey-fill:#f2b400; --pollen:#f2c200; --nectar:#d1373a;
+  --good:#1d8a4b; --warn:#b26b00; --bad:#c2412d; --vx:#2f6fd6; --vy:#8a3fc7;
+  --cell:rgba(31,79,204,.12); --hive:#1f4fcc;
+  --font-display:"Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1319; --panel:#161d25; --field:#121920; --ink:#e5eaf0; --muted:#94a2b2; --line:#2b3642;
+  --honey:#f2b630; --honey-fill:#f2b630; --pollen:#f5cc2a; --nectar:#ef5a5c;
+  --good:#3fc27a; --warn:#f0a43a; --bad:#f06b55; --vx:#6aa1ff; --vy:#c38bff;
+  --cell:rgba(111,155,255,.14); --hive:#7ea6ff; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --panel:#161d25; --field:#121920; --ink:#e5eaf0; --muted:#94a2b2; --line:#2b3642;
+  --honey:#f2b630; --honey-fill:#f2b630; --pollen:#f5cc2a; --nectar:#ef5a5c;
+  --good:#3fc27a; --warn:#f0a43a; --bad:#f06b55; --vx:#6aa1ff; --vy:#c38bff;
+  --cell:rgba(111,155,255,.14); --hive:#7ea6ff; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:22px 56px;display:flex;flex-direction:column;gap:22px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--honey)}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1.05;margin:4px 0 6px;letter-spacing:.01em;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:600;font-size:24px;margin:0;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:600;font-size:17px;margin:0;text-wrap:balance}
+p{margin:0}
+.lede{max-width:70ch;color:var(--muted)}
+.muted{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-end}
+.teamstrip{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--font-mono);font-size:12.5px;color:var(--muted);align-items:center}
+.teamstrip b{color:var(--ink);font-weight:500}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.dot.on{background:var(--good)} .dot.off{background:var(--warn)}
+/* step rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;margin-block:-8px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.rail a{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:500;min-width:0}
+.rail a span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail a .n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;border:1.5px solid var(--line);color:var(--muted)}
+.rail a.done .n{background:var(--good);border-color:var(--good);color:var(--panel)}
+.rail a[aria-current="page"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.rail a[aria-current="page"] .n{border-color:var(--honey);color:var(--honey)}
+.rail a.done[aria-current="page"] .n{color:var(--panel)}
+@media (max-width:900px){ .rail a span.t{display:none} .rail a{justify-content:center} }
+/* step layout */
+.step{display:flex;flex-direction:column;gap:18px}
+.stephead{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+.stephead .intro{display:flex;flex-direction:column;gap:8px}
+.brief{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.brief h3{font-size:14px;font-family:var(--font-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.todo li{display:flex;gap:8px;align-items:flex-start}
+.todo .ck{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:11px;margin-top:2px;color:var(--panel)}
+.todo li.ok .ck{background:var(--good);border-color:var(--good)}
+.todo label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.todo input{margin-top:4px}
+.todo.missions{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px 22px}
+@media (max-width:480px){.todo.missions{grid-template-columns:minmax(0,1fr)}}
+.nextbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:14px}
+.btn{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.03em;padding:9px 14px;border-radius:8px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--honey-fill);border-color:var(--honey-fill);color:#1a1300}
+.btn.small{font-size:13.5px;padding:6px 11px}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input:focus-visible,button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+.banner{padding:10px 14px;border-radius:8px;border:1px solid var(--warn);color:var(--ink);font-size:14px;background:var(--panel)}
+.chip{font-family:var(--font-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)} .chip.idle{color:var(--muted)}
+/* overview */
+.loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.loopcard{padding:14px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;min-width:0}
+.loopcard:hover{border-color:var(--ink)}
+.loopcard .num{font-family:var(--font-mono);font-size:12px;color:var(--honey)}
+.loopcard p{font-size:13.5px;color:var(--muted)}
+.loopback{font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.loopback svg{flex:none}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.card{padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+/* learn */
+.concepts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.eq{font-family:var(--font-mono);font-size:14.5px;color:var(--ink);background:var(--bg);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+.q{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.q .opts{display:flex;flex-direction:column;gap:6px}
+.q .opts button{font:inherit;font-size:14px;text-align:left;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.q .opts button.right{border-color:var(--good);box-shadow:inset 3px 0 0 var(--good)}
+.q .opts button.wrong{border-color:var(--bad);box-shadow:inset 3px 0 0 var(--bad)}
+.q .fb{font-size:13.5px;color:var(--muted)}
+table.geo td{padding:5px 6px}
+.lesson{display:flex;flex-direction:column;gap:16px;max-width:900px}
+.lsec{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.lsec h3{font-size:20px}
+.lsec p{max-width:72ch}
+.lsec .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--honey)}
+.seen{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:14px}
+.seen b{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;display:block;margin-bottom:2px}
+.formula{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.formula .big{font-family:var(--font-mono);font-size:17px;color:var(--ink);overflow-x:auto;white-space:nowrap}
+.syms{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13.5px;margin:0}
+.syms dt{font-family:var(--font-mono);color:var(--honey)}
+.syms dd{margin:0;color:var(--muted)}
+.worked{display:flex;flex-direction:column;gap:6px}
+.worked h4{margin:0;font-size:13px;font-family:var(--font-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.worked ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.worked .m{font-family:var(--font-mono);font-size:13.5px}
+.worked .ans{color:var(--ink);font-weight:600}
+.trylink{font-size:14px}
+.trylink a{color:var(--vx)}
+.glossary{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 18px;font-size:13.5px}
+.glossary div{display:flex;gap:8px;border-bottom:1px solid var(--line);padding:4px 0}
+.glossary span:first-child{font-family:var(--font-mono);color:var(--honey);min-width:52px}
+.glossary span:last-child{color:var(--muted)}
+/* simulator */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.viz{padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.vrow{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.pill{font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:.04em;padding:5px 12px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)}
+.stat{font-family:var(--font-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stat b{color:var(--ink);font-weight:500}
+canvas{display:block;width:100%;border-radius:6px}
+.cv{background:var(--field);border:1px solid var(--line);touch-action:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.legend i.sq{width:10px;height:10px;border-radius:50%}
+.controls{padding:16px;display:flex;flex-direction:column;gap:14px}
+.group{display:flex;flex-direction:column;gap:10px}
+.gtitle{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:4px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-weight:500;font-size:14px}
+.ctl output{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--honey);font-weight:500}
+.hint{font-size:12px;color:var(--muted)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--line);margin:8px 0 2px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ink);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--line)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:3px solid var(--panel)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13.5px;padding:7px 6px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel);font-weight:600}
+.checks{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.checks label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns .wide{grid-column:1/-1;justify-content:center}
+.btns .btn{justify-content:center}
+#map{border:1px solid var(--line);cursor:crosshair;touch-action:none}
+.mapkey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.mapkey i{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+th{font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.n,th.n{text-align:right} td.n{font-family:var(--font-mono)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.f{padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.f header{display:flex;gap:10px;align-items:center}
+.stepnum{font-family:var(--font-mono);font-size:12px;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;border:1.5px solid var(--honey);color:var(--honey);flex:none}
+.subs{font-family:var(--font-mono);font-size:13px;color:var(--muted);line-height:1.7;overflow-wrap:anywhere}
+.subs b{color:var(--honey);font-weight:500}
+.why{font-size:13.5px;color:var(--muted)}
+details.more{border-top:1px solid var(--line);padding-top:12px}
+details.more summary{cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:17px}
+/* data entry */
+.form{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+.field input,.field select,.vname{font-family:var(--font-mono);font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:110px}
+.field select{width:auto}
+.resbtns{display:flex;flex-wrap:wrap;gap:6px}
+.res-good{border-color:var(--good)!important;color:var(--good)!important}
+.res-bad{border-color:var(--bad)!important;color:var(--bad)!important}
+.res-long{border-color:var(--vx)!important;color:var(--vx)!important}
+.res-warn{border-color:var(--warn)!important;color:var(--warn)!important}
+.tablewrap{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.tablewrap th{position:sticky;top:0;background:var(--panel);z-index:1}
+.x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px}
+.x:hover{color:var(--bad)}
+.kpis{display:flex;flex-wrap:wrap;gap:10px 26px}
+.kpi{display:flex;flex-direction:column}
+.kpi b{font-family:var(--font-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.pastebox{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--bg);border:1.5px solid var(--honey);border-radius:8px;padding:12px 14px}
+.pastebox code{flex:1;min-width:0;font-family:var(--font-mono);font-size:15px;color:var(--ink);overflow-wrap:anywhere}
+pre.code{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.55;max-height:420px}
+.usage{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:14px;max-width:90ch}
+.usage code,.inline{font-family:var(--font-mono);font-size:13px;background:var(--bg);padding:1px 5px;border-radius:4px}
+.chartwrap{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--font-mono);font-size:12px;line-height:1.5;color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap;z-index:2}
+.who{color:var(--muted);font-size:12.5px}
+textarea.csv{width:100%;min-height:140px;font-family:var(--font-mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px}
+footer{font-size:13px;color:var(--muted);max-width:95ch}
+footer ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+@media (max-width:980px){ .stage,.two,.stephead{grid-template-columns:minmax(0,1fr)} .loop{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} }
+@media (max-width:480px){ .wrap{padding-inline:16px} .fgrid,.concepts{grid-template-columns:minmax(0,1fr)} }
+@media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto!important;transition:none!important} }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">FTC 2026–27 · BIOBUZZ · Blue HIVE</div>
+      <h1>BIOBUZZ Shooter Lab</h1>
+      <p class="lede">Five steps from first launch to a shooter that scores: explore the simulator, understand the physics behind it, measure the real robot, build the distance → RPM formula, and prove it on the field.</p>
+    </div>
+    <div class="teamstrip" aria-live="polite">
+      <span><span class="dot" id="syncdot"></span><span id="synctext">Connecting to team data…</span></span>
+      <span>robot <b id="ts-robot">–</b></span>
+      <span>formula <b id="ts-formula">not saved</b></span>
+    </div>
+  </header>
+
+  <nav class="rail" aria-label="Steps">
+    <ol>
+      <li><a href="#start" data-route="start"><span class="n">★</span><span class="t">Overview</span></a></li>
+      <li><a href="#simulate" data-route="simulate"><span class="n">1</span><span class="t">Explore</span></a></li>
+      <li><a href="#learn" data-route="learn"><span class="n">2</span><span class="t">Understand</span></a></li>
+      <li><a href="#measure" data-route="measure"><span class="n">3</span><span class="t">Measure</span></a></li>
+      <li><a href="#formula" data-route="formula"><span class="n">4</span><span class="t">Build formula</span></a></li>
+      <li><a href="#validate" data-route="validate"><span class="n">5</span><span class="t">Validate</span></a></li>
+    </ol>
+  </nav>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section class="step" id="r-start" data-page>
+    <div class="intro" style="display:flex;flex-direction:column;gap:8px">
+      <h2>How the team uses this lab</h2>
+      <p class="lede">Work through the steps in order. Steps 3 to 5 write to one shared team log, so every student adds to the same robot data. If the shooter misses too often in Step 5, go back to Step 3 and re-measure. That loop is the engineering process.</p>
+    </div>
+    <div class="loop" id="loopcards"></div>
+    <div class="loopback"><svg width="34" height="18" viewBox="0 0 34 18" aria-hidden="true"><path d="M32 4 H8 a5 5 0 0 0 0 10 H14" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 10 l3 4 -3 4" fill="none" stroke="currentColor" stroke-width="1.6" transform="translate(0,-3)"/></svg>
+      <span>Validation below 80% made → back to Step 3 (re-measure η and spin) or Step 4 (more test shots).</span></div>
+    <div class="two">
+      <div class="card panel">
+        <h3>Team robot profile</h3>
+        <p class="muted" style="font-size:14px">Every simulation in Steps 3–5 uses these numbers. They are set in Step 3.</p>
+        <table><tbody id="ov-robot"></tbody></table>
+      </div>
+      <div class="card panel">
+        <h3>Team formula</h3>
+        <p class="muted" style="font-size:14px">Saved in Step 4 and tested in Step 5.</p>
+        <div class="pastebox"><code id="ov-formula">No formula saved yet.</code></div>
+        <p class="hint" id="ov-formula-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 1 EXPLORE ===================== -->
+  <section class="step" id="r-simulate" data-page hidden>
+    <div class="stephead">
+      <div class="intro">
+        <div class="eyebrow">Step 1 of 5 · start here</div>
+        <h2>Explore the shot</h2>
+        <p class="lede">Play first, explain later. Move the sliders, press Launch, and watch what the ball does. The missions below the simulator ask you to predict, test and notice. Step 2 explains everything you see here.</p>
+        <p class="hint">Quick tour: the gold dashed line is the predicted path, with a dot every 0.1 s. The thick gold line on the HIVE is the opening the ball must enter. The green band on the RPM slider shows every speed that scores.</p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="viz panel">
+        <div class="vrow">
+          <span id="verdict" class="pill good">—</span>
+          <span class="stat">exit speed <b id="s-v">–</b></span>
+          <span class="stat">time to CELL <b id="s-t">–</b></span>
+          <span class="stat">entry <b id="s-e">–</b></span>
+        </div>
+        <canvas id="cv" class="cv" aria-label="Side view of the robot, ball path and the blue HIVE"></canvas>
+        <div class="legend">
+          <span><i style="background:var(--honey)"></i>predicted path (dots every 0.1 s)</span>
+          <span><i style="background:var(--vy);opacity:.6"></i>same shot with no spin</span>
+          <span><i style="background:var(--muted);opacity:.5"></i>earlier launches</span>
+        </div>
+      </div>
+      <aside class="controls panel" aria-label="Shooter controls">
+        <div class="btns"><button class="btn small wide" id="loadteam">Load team robot</button></div>
+        <div class="group">
+          <div class="gtitle">Field position</div>
+          <div class="ctl"><label for="d">Distance to CELL lip <output id="d-o"></output></label>
+            <input type="range" id="d" min="12" max="110" step="1" value="36"><div class="hint" id="d-h"></div></div>
+          <div class="ctl"><label for="h0">Launch height <output id="h0-o"></output></label>
+            <input type="range" id="h0" min="6" max="18" step="0.5" value="12"></div>
+        </div>
+        <div class="group">
+          <div class="gtitle">Launcher</div>
+          <div class="ctl"><label for="ang">Launch angle θ <output id="ang-o"></output></label>
+            <input type="range" id="ang" min="20" max="85" step="1" value="55"></div>
+          <div class="ctl"><label for="rpm">Flywheel speed <output id="rpm-o"></output></label>
+            <input type="range" id="rpm" min="300" max="6000" step="10" value="3300"><div class="hint" id="rpm-h"></div></div>
+          <div class="ctl"><label for="wheel">Wheel diameter <output id="wheel-o"></output></label>
+            <input type="range" id="wheel" min="48" max="140" step="1" value="96"></div>
+          <div class="ctl"><label for="eta">Transfer efficiency η <output id="eta-o"></output></label>
+            <input type="range" id="eta" min="0.25" max="0.95" step="0.01" value="0.45"></div>
+        </div>
+        <div class="group">
+          <div class="gtitle">Ball, air and spin</div>
+          <div class="seg" role="group" aria-label="Game piece">
+            <button id="b-pollen" aria-pressed="true">POLLEN 2.8 in</button>
+            <button id="b-nectar" aria-pressed="false">NECTAR 3.6 in</button>
+          </div>
+          <div class="seg" role="group" aria-label="Spin direction">
+            <button id="sp-back" aria-pressed="true">Backspin</button>
+            <button id="sp-none" aria-pressed="false">No spin</button>
+            <button id="sp-top" aria-pressed="false">Topspin</button>
+          </div>
+          <div class="ctl"><label for="sf">Spin factor <output id="sf-o"></output></label>
+            <input type="range" id="sf" min="0" max="1" step="0.05" value="1"><div class="hint" id="sf-h"></div></div>
+          <div class="checks">
+            <label><input type="checkbox" id="air" checked> Include air (drag + Magnus)</label>
+            <label><input type="checkbox" id="strict"> Clean entries only (rising entries count as misses)</label>
+            <label><input type="checkbox" id="slow"> Slow motion (¼ speed)</label>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="launch">Launch</button>
+          <button class="btn" id="aim">Auto-aim RPM</button>
+          <button class="btn ghost small wide" id="clear">Clear earlier launches</button>
+        </div>
+      </aside>
+    </div>
+    <div class="card panel">
+      <h3>Missions · predict, try, notice</h3>
+      <p class="muted" style="font-size:14px">Write a prediction before you test. Your answers stay on this device.</p>
+      <ul class="todo missions" id="todo-sim"></ul>
+    </div>
+    <div class="two">
+      <div class="card panel">
+        <h3>Shot map</h3>
+        <p class="muted" style="font-size:14px">Every angle and RPM at this distance. Click or drag to try one.</p>
+        <canvas id="map" aria-label="Shot map of launch angle versus RPM"></canvas>
+        <div class="mapkey">
+          <span><i style="background:var(--good)"></i>clean entry</span>
+          <span><i style="background:var(--good);opacity:.4"></i>enters rising (may bounce out)</span>
+          <span><i style="background:var(--warn)"></i>hits lip or top edge</span>
+          <span><i style="background:var(--bad);opacity:.35"></i>short</span>
+          <span><i style="background:var(--vx);opacity:.3"></i>long</span>
+        </div>
+        <p class="hint" id="bestang"></p>
+      </div>
+      <div class="card panel">
+        <h3>Ideal vs real</h3>
+        <p class="muted" style="font-size:14px">The formulas ignore air. The simulation includes drag and spin when air is on.</p>
+        <table><thead><tr><th></th><th class="n">No air (formulas)</th><th class="n">Simulation</th></tr></thead><tbody id="cmp"></tbody></table>
+        <p class="hint" id="win"></p>
+      </div>
+    </div>
+    <details class="more">
+      <summary>Show the math for this shot (explained in Step 2)</summary>
+      <p class="lede" style="margin:8px 0 12px">Inches are converted to meters (1 in = 0.0254 m), g = 9.81 m/s². Gold numbers come from the sliders.</p>
+      <div class="fgrid" id="fgrid"></div>
+    </details>
+    <div class="nextbar"><a class="btn ghost" href="#start">← Overview</a><a class="btn primary" href="#learn">Next: Understand the physics →</a></div>
+  </section>
+
+  <!-- ===================== 2 UNDERSTAND ===================== -->
+  <section class="step" id="r-learn" data-page hidden>
+    <div class="stephead">
+      <div class="intro">
+        <div class="eyebrow">Step 2 of 5</div>
+        <h2>Understand the physics</h2>
+        <p class="lede">Seven short sections explain what you saw in the simulator, in the order the ball experiences it: wheel, launch, flight, air, spin, target. Each one follows the same worked example and ends with a check question.</p>
+      </div>
+      <div class="brief panel">
+        <h3>Done when</h3>
+        <ul class="todo" id="todo-learn"></ul>
+      </div>
+    </div>
+    <div class="lesson" id="lesson"></div>
+    <div class="nextbar"><a class="btn ghost" href="#simulate">← Explore</a><span class="hint">Your answers stay on this device.</span><a class="btn primary" href="#measure">Next: Measure the robot →</a></div>
+  </section>
+
+  <!-- ===================== 3 MEASURE ===================== -->
+  <section class="step" id="r-measure" data-page hidden>
+    <div class="stephead">
+      <div class="intro">
+        <div class="eyebrow">Step 3 of 5 · team data</div>
+        <h2>Measure the real robot</h2>
+        <p class="lede">The simulator is only as good as its inputs. Measure the robot's fixed dimensions, then film shots to find the two numbers nobody can guess: transfer efficiency η and spin.</p>
+      </div>
+      <div class="brief panel">
+        <h3>Done when</h3>
+        <ul class="todo" id="todo-measure"></ul>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>A · Robot setup</h3>
+      <p class="muted" style="font-size:14px">Measure with a tape and protractor. Launch height is where the ball leaves the hood, measured from the tiles.</p>
+      <div class="form" id="robotform">
+        <label class="field">Hood angle (°)<input type="number" id="rb-ang" step="0.5" min="20" max="85"></label>
+        <label class="field">Launch height (in)<input type="number" id="rb-h0" step="0.25" min="4" max="20"></label>
+        <label class="field">Wheel diameter (mm)<input type="number" id="rb-wheel" step="1" min="40" max="160"></label>
+        <label class="field">Gear ratio (motor:wheel)<input type="number" id="rb-gear" step="0.1" min="0.2" max="10"></label>
+        <label class="field">Game piece<select id="rb-ball"><option value="pollen">POLLEN</option><option value="nectar">NECTAR</option></select></label>
+        <label class="field">Spin direction<select id="rb-spin"><option value="back">Backspin</option><option value="none">No spin</option><option value="top">Topspin</option></select></label>
+        <button class="btn small primary" id="rb-save">Save robot setup</button>
+        <span class="hint" id="rb-msg"></span>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>B · Exit speed and spin from slow-motion video</h3>
+      <ol class="usage">
+        <li>Tape two marks on a board behind the ball's path, <b>12 in apart</b>, starting just after the hood.</li>
+        <li>Put a stripe on a ball with a marker so you can count turns.</li>
+        <li>Spin up the flywheel, read the RPM from telemetry, and film the shot in slow motion (240 fps if your phone has it).</li>
+        <li>Step through the video and count the frames the ball takes between the marks, and how many turns the stripe makes in those frames.</li>
+        <li>Repeat at 3 or more different RPMs. Five or more rows give a trustworthy η.</li>
+      </ol>
+      <div class="form">
+        <label class="field">Flywheel RPM<input type="number" id="sp-rpm" step="10" min="100" max="7000" placeholder="3000"></label>
+        <label class="field">Video fps<input type="number" id="sp-fps" step="1" min="24" max="1000" value="240"></label>
+        <label class="field">Frames between marks<input type="number" id="sp-frames" step="1" min="1" max="2000" placeholder="12"></label>
+        <label class="field">Distance (in)<input type="number" id="sp-dist" step="0.5" min="1" max="60" value="12"></label>
+        <label class="field">Ball turns (optional)<input type="number" id="sp-turns" step="0.25" min="0" max="50" placeholder="1.5"></label>
+        <button class="btn small primary" id="sp-add">Add measurement</button>
+        <span class="hint" id="sp-msg"></span>
+      </div>
+      <div class="two">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <div class="kpis" id="sp-kpis"></div>
+          <div class="tablewrap"><table><thead><tr><th class="n">RPM</th><th class="n">Ball speed</th><th class="n">η</th><th class="n">Spin factor</th><th>By</th><th></th></tr></thead><tbody id="sp-rows"></tbody></table></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+          <div class="legend"><span><i class="sq" style="background:var(--ink)"></i>measurement</span><span><i style="background:var(--vx)"></i>best fit: slope = η</span></div>
+          <canvas id="etacv" class="cv" aria-label="Ball speed versus wheel surface speed"></canvas>
+          <div class="form"><button class="btn small primary" id="sp-use">Save η and spin to team robot</button><span class="hint" id="sp-use-msg"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="nextbar"><a class="btn ghost" href="#learn">← Understand</a><a class="btn primary" href="#formula">Next: Build the formula →</a></div>
+  </section>
+
+  <!-- ===================== 4 FORMULA ===================== -->
+  <section class="step" id="r-formula" data-page hidden>
+    <div class="stephead">
+      <div class="intro">
+        <div class="eyebrow">Step 4 of 5 · team data</div>
+        <h2>Build the distance → RPM formula</h2>
+        <p class="lede">Use the calibrated simulator to plan test shots, shoot them on the field, and fit a formula to the RPMs that really scored.</p>
+      </div>
+      <div class="brief panel">
+        <h3>Done when</h3>
+        <ul class="todo" id="todo-formula"></ul>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>A · Test plan</h3>
+      <p class="muted" style="font-size:14px">At each distance, start below the predicted window and step up 100 rpm. Shoot 3 balls per RPM and log every one, including misses. Misses show where the window ends.</p>
+      <div class="form"><label class="field" style="flex:1;min-width:220px">Test distances (in)<input type="text" id="tp-list" value="24, 30, 36, 42" style="width:100%"></label></div>
+      <div class="tablewrap" style="max-height:none"><table><thead><tr><th class="n">Distance</th><th class="n">Predicted scoring RPM</th><th class="n">Sweep</th><th class="n">Shots logged</th></tr></thead><tbody id="tp-rows"></tbody></table></div>
+    </div>
+    <div class="card panel">
+      <h3>B · Log test shots</h3>
+      <div class="form">
+        <label class="field">Distance (in)<input type="number" id="sh-d" step="1" min="6" max="140" value="36"></label>
+        <label class="field">Flywheel RPM<input type="number" id="sh-rpm" step="10" min="100" max="7000" value="3300"></label>
+        <div class="resbtns" role="group" aria-label="Result">
+          <button class="btn small res-good" data-res="score">Scored</button>
+          <button class="btn small res-bad" data-res="short">Short</button>
+          <button class="btn small res-long" data-res="long">Long</button>
+          <button class="btn small res-warn" data-res="bounce">Bounced out</button>
+        </div>
+        <span class="hint" id="sh-msg"></span>
+      </div>
+      <div class="two">
+        <div style="min-width:0">
+          <table><thead><tr><th class="n">Distance</th><th class="n">Shots</th><th class="n">Scored</th><th class="n">Real window</th><th class="n">Sim center</th></tr></thead><tbody id="an-rows"></tbody></table>
+        </div>
+        <div class="tablewrap"><table><thead><tr><th class="n">d</th><th class="n">RPM</th><th>Result</th><th>By</th><th></th></tr></thead><tbody id="sh-rows"></tbody></table></div>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>C · Fit the formula</h3>
+      <div class="form">
+        <div class="field">Fit to<div class="seg" role="group" aria-label="Fit source" style="min-width:230px"><button id="src-real" aria-pressed="true">Real shots</button><button id="src-sim" aria-pressed="false">Simulator</button></div></div>
+        <div class="field">Regression<div class="seg" role="group" aria-label="Regression degree" style="min-width:260px"><button id="deg1" aria-pressed="false">Linear</button><button id="deg2" aria-pressed="true">Quadratic</button><button id="deg3" aria-pressed="false">Cubic</button></div></div>
+      </div>
+      <div class="legend">
+        <span><i class="sq" style="background:var(--good)"></i>scored</span><span><i class="sq" style="background:var(--bad)"></i>short</span><span><i class="sq" style="background:var(--vx)"></i>long</span><span><i class="sq" style="background:var(--warn)"></i>bounced out</span>
+        <span><i style="background:var(--good);opacity:.3;height:8px"></i>simulator window</span><span><i style="background:var(--ink)"></i>fit points</span><span><i style="background:var(--honey)"></i>formula</span>
+      </div>
+      <div class="chartwrap"><canvas id="fitcv" class="cv" aria-label="RPM versus distance with test shots and the fitted formula"></canvas><div class="tip" id="fittip" hidden></div></div>
+      <p class="stat" id="fitstats"></p>
+      <div class="form">
+        <label class="field">distance variable<input class="vname" id="vd" value="distance" spellcheck="false"></label>
+        <label class="field">RPM variable<input class="vname" id="vr" value="targetRpm" spellcheck="false"></label>
+        <div class="field">Format<div class="seg" role="group" aria-label="Formula format" style="min-width:200px"><button id="fmt-java" aria-pressed="true">Java line</button><button id="fmt-math" aria-pressed="false">Plain math</button></div></div>
+      </div>
+      <div class="pastebox"><code id="formula">–</code><button class="btn small" id="copyf">Copy</button><button class="btn small primary" id="savef">Save as team formula</button></div>
+      <p class="hint" id="formnote"></p>
+      <details class="more">
+        <summary>How to use the formula in robot code</summary>
+        <ol class="usage" id="usage" style="margin-top:10px"></ol>
+        <div class="form" style="justify-content:space-between;margin:10px 0 8px"><span class="hint">Where the line goes in a typical TeleOp loop. The formula is a placeholder for your pasted line.</span><button class="btn small" id="copyx">Copy example</button></div>
+        <pre class="code"><code id="code"></code></pre>
+      </details>
+    </div>
+    <div class="nextbar"><a class="btn ghost" href="#measure">← Measure</a><a class="btn primary" href="#validate">Next: Validate →</a></div>
+  </section>
+
+  <!-- ===================== 5 VALIDATE ===================== -->
+  <section class="step" id="r-validate" data-page hidden>
+    <div class="stephead">
+      <div class="intro">
+        <div class="eyebrow">Step 5 of 5 · team data</div>
+        <h2>Validate on the field</h2>
+        <p class="lede">Put the team formula on the robot and shoot from many distances. Log every shot. The goal is 80% made over at least 20 shots spread across the range.</p>
+      </div>
+      <div class="brief panel">
+        <h3>Done when</h3>
+        <ul class="todo" id="todo-validate"></ul>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>A · Log validation shots</h3>
+      <p class="muted" style="font-size:14px" id="va-formula">No team formula saved yet. Save one in Step 4.</p>
+      <div class="form">
+        <label class="field">Distance (in)<input type="number" id="va-d" step="1" min="6" max="140" value="36"></label>
+        <label class="field">RPM used<input type="number" id="va-rpm" step="10" min="0" max="7000"></label>
+        <label class="checks" style="padding-bottom:6px"><span><input type="checkbox" id="va-move"> robot moving</span></label>
+        <div class="resbtns" role="group" aria-label="Result">
+          <button class="btn small res-good" data-vres="made">Made</button>
+          <button class="btn small res-bad" data-vres="short">Missed short</button>
+          <button class="btn small res-long" data-vres="long">Missed long</button>
+          <button class="btn small res-warn" data-vres="bounce">Bounced out</button>
+          <button class="btn small ghost" data-vres="wide">Missed wide</button>
+        </div>
+        <span class="hint" id="va-msg"></span>
+      </div>
+    </div>
+    <div class="two">
+      <div class="card panel">
+        <h3>B · Results</h3>
+        <div class="kpis" id="va-kpis"></div>
+        <canvas id="vacv" class="cv" aria-label="Make percentage by distance"></canvas>
+        <div class="legend"><span><i class="sq" style="background:var(--good)"></i>bin at or above 80%</span><span><i class="sq" style="background:var(--warn)"></i>below 80%</span></div>
+      </div>
+      <div class="card panel">
+        <h3>C · Diagnosis</h3>
+        <div id="va-diag" class="usage" style="padding-left:0"></div>
+        <div class="tablewrap"><table><thead><tr><th class="n">d</th><th class="n">RPM</th><th>Result</th><th>Moving</th><th>By</th><th></th></tr></thead><tbody id="va-rows"></tbody></table></div>
+      </div>
+    </div>
+    <div class="card panel">
+      <h3>Export team data</h3>
+      <p class="muted" style="font-size:14px">One CSV with the robot profile, speed measurements, test shots and validation shots, for lab reports or a spreadsheet.</p>
+      <div class="form"><button class="btn small" id="export">Export CSV</button><span class="hint" id="ex-msg"></span></div>
+      <textarea class="csv" id="csvout" hidden readonly aria-label="CSV export"></textarea>
+    </div>
+    <div class="nextbar"><a class="btn ghost" href="#formula">← Build formula</a><a class="btn ghost" href="#start">Back to overview</a></div>
+  </section>
+
+  <footer>
+    <b>Geometry and assumptions.</b>
+    <ul>
+      <li>Blue HIVE from the BIOBUZZ Competition Manual (Fig. 9-10, section 9.6): pivot 43.95 in, CELLs 12.04 in deep with an 18.84 in gap, tipped 30°, opening 53.5–65.6 in above the tiles, A-frame base 38.95 in, HIVE at field center.</li>
+      <li>POLLEN ≈ 2.8 in, NECTAR ≈ 3.6 in (manual). Masses 24.9 g and 41.3 g come from a community model, so weigh your own.</li>
+      <li>2D model. Drag C<sub>d</sub> = 0.45, ρ = 1.2 kg/m³. Magnus C<sub>L</sub> ≈ S/(1+2S) with constant spin. Spin factor 1 means the ball rolls along the hood without slipping (ω = v/r). "Rising entry" means the ball's path is more than 60° off the CELL's axis as it crosses the opening.</li>
+    </ul>
+  </footer>
+</div>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f1=(x,n)=>Number(x).toFixed(n===undefined?2:n);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* ================= geometry & physics engine ================= */
+const G=9.81, IN=0.0254, RHO=1.2, CD=0.45;
+const LIP_H=53.5, MOUTH_L=14, TILT=30*Math.PI/180, PIVOT_H=43.95;
+const HC=Math.cos(TILT), HS=Math.sin(TILT), CELL_IN=18.84/2, CELL_OUT=18.84/2+12.04, CELL_H=14;
+const U=[HS,HC], N=[-HC,HS];
+const BALLS={pollen:{name:"POLLEN",d:2.80,m:0.0249,col:"--pollen"},nectar:{name:"NECTAR",d:3.62,m:0.0413,col:"--nectar"}};
+const ROBOT_DEF={ang:55,h0:12,wheel:96,gear:1,ball:"pollen",spinType:"back",eta:0.45,spinFactor:1,measured:false};
+const exitV=(c,rpm)=>c.eta*rpm*2*Math.PI/60*(c.wheel/2000);
+function omegaOf(c,v){ if(c.spinType==="none") return 0; const r=BALLS[c.ball].d/2*IN; return (c.spinType==="back"?1:-1)*c.spinFactor*v/r; }
+
+function sim(c,rpm,full,dt,noSpin){
+  dt=dt||0.002; const b=BALLS[c.ball], rr=b.d/2*IN, A=Math.PI*rr*rr, v=exitV(c,rpm);
+  const k=c.air?0.5*RHO*CD*A/b.m:0, w0=(noSpin||!c.air)?0:omegaOf(c,v);
+  const a=c.ang*Math.PI/180; let x=0,y=c.h0*IN,vx=v*Math.cos(a),vy=v*Math.sin(a),t=0;
+  const lx=c.d*IN, ly=LIP_H*IN, L=MOUTH_L*IN;
+  let fPrev=(x-lx)*N[0]+(y-ly)*N[1], res=null, pts=full?[[0,0,c.h0]]:null, apex=y;
+  while(t<4){
+    const sp=Math.hypot(vx,vy); let ax=-k*sp*vx, ay=-G-k*sp*vy;
+    if(w0!==0&&sp>0.01){const Sr=rr*Math.abs(w0)/sp, CL=Sr/(1+2*Sr), kl=0.5*RHO*CL*A/b.m*Math.sign(w0); ax+=-kl*sp*vy; ay+=kl*sp*vx;}
+    vx+=ax*dt; vy+=ay*dt; x+=vx*dt; y+=vy*dt; t+=dt;
+    if(!res&&y>apex) apex=y;
+    if(full) pts.push([t,x/IN,y/IN]);
+    const f=(x-lx)*N[0]+(y-ly)*N[1];
+    if(!res&&fPrev>0&&f<=0){
+      const fr=fPrev/(fPrev-f), px=x-vx*dt*(1-fr), py=y-vy*dt*(1-fr), s=(px-lx)*U[0]+(py-ly)*U[1];
+      const sp2=Math.hypot(vx,vy), cosAx=(vx*HC-vy*HS)/sp2;
+      let kind; if(s>=rr&&s<=L-rr) kind=cosAx>=0.5?"score":"risky"; else if(s<rr&&s>-rr) kind="lip";
+      else if(s<=-rr) kind="short"; else if(s<L+rr) kind="rim"; else kind="long";
+      res={kind,t,px:px/IN,py:py/IN,vx,vy,ent:Math.atan2(-vy,vx)*180/Math.PI,offAxis:Math.acos(clamp(cosAx,-1,1))*180/Math.PI};
+      if(!full){res.apex=apex/IN; return res;}
+      if(kind!=="score"&&kind!=="risky"&&kind!=="long") break;
+    }
+    if(res&&(res.kind==="score"||res.kind==="risky")&&-f>4*IN) break;
+    fPrev=f;
+    if(y<rr){ if(!res) res={kind:"floor",t}; break; }
+    if(x>168*IN) break;
+  }
+  if(!res) res={kind:"floor",t};
+  res.apex=apex/IN; if(full) res.pts=pts; return res;
+}
+const scores=(k,strict)=>k==="score"||(!strict&&k==="risky");
+function scan(c,step){const out=[];let s0=null,last=null;step=step||10;
+  for(let r=300;r<=6000;r+=step){const ok=scores(sim(c,r,false,0.0025).kind,c.strict); if(ok&&s0===null) s0=r; if(!ok&&s0!==null){out.push([s0,last]);s0=null;} if(ok) last=r;}
+  if(s0!==null) out.push([s0,last]); return out;}
+const widest=rs=>rs.length?rs.reduce((a,b)=>(b[1]-b[0]>a[1]-a[0]?b:a)):null;
+const VERDICT={score:["SCORES · clean entry","good"],risky:["ENTERS RISING · may bounce out","warn"],lip:["HITS THE LIP","warn"],rim:["CLIPS THE TOP EDGE","warn"],
+  short:["SHORT · hits the HIVE below the CELL","bad"],floor:["SHORT · lands before the HIVE","bad"],long:["LONG · over the CELL","bad"]};
+
+/* ================= theme colors ================= */
+const C={};
+function readColors(){const cs=getComputedStyle(document.documentElement);
+  ["--bg","--panel","--field","--ink","--muted","--line","--honey","--honey-fill","--pollen","--nectar","--good","--warn","--bad","--vx","--vy","--cell","--hive"].forEach(k=>C[k]=cs.getPropertyValue(k).trim());}
+function sizeCanvas(c,ratio){const w=c.clientWidth; if(!w) return null; const dpr=window.devicePixelRatio||1, h=Math.round(w*ratio);
+  c.style.height=h+"px"; c.width=Math.round(w*dpr); c.height=Math.round(h*dpr); const x=c.getContext("2d"); x.setTransform(dpr,0,0,dpr,0,0); return [w,h];}
+
+/* ================= team data layer ================= */
+let db=null, user=null, me=null, canWrite=true, live=false, downloads=null;
+const store={speeds:[],shots:[],validation:[]};
+let robot={...ROBOT_DEF}, robotSaved=false, formulaDoc=null;
+const names={};
+function banner(msg){const b=$("banner"); if(!msg){b.hidden=true;return;} b.textContent=msg; b.hidden=false;}
+function failWrite(e){
+  const code=e&&e.code;
+  if(code==="invalid_argument"||code==="not_granted"){canWrite=false; applyWriteState(); banner("You can see the team data but not add to it. Ask the page owner to give you Contributor access.");}
+  else if(code==="quota_exceeded") banner("The team log is full. Delete old rows you no longer need, then try again.");
+  else banner("That entry didn't save. Check your connection and try again.");
+}
+async function addRow(coll,obj){
+  if(!canWrite) return false; obj.by=me||null; obj.at=Date.now();
+  if(db){ try{ await db.collection(coll).add(obj); return true; }catch(e){ failWrite(e); return false; } }
+  store[coll].push({id:"local"+Math.random().toString(36).slice(2),...obj}); onData(coll); return true;
+}
+async function delRow(coll,id){
+  if(db){ try{ await db.collection(coll).doc(id).delete(); }catch(e){ failWrite(e); } return; }
+  store[coll]=store[coll].filter(r=>r.id!==id); onData(coll);
+}
+async function setDoc(path,obj){
+  obj.by=me||null; obj.at=Date.now();
+  if(db){ try{ await db.doc(path).set(obj); return true; }catch(e){ failWrite(e); return false; } }
+  if(path==="team/robot"){ robot={...ROBOT_DEF,...obj}; robotSaved=true; onData("robot"); }
+  if(path==="team/formula"){ formulaDoc=obj; onData("formula"); }
+  return true;
+}
+function applyWriteState(){
+  document.querySelectorAll("[data-write]").forEach(el=>{el.disabled=!canWrite;});
+}
+async function fillNames(root){
+  const els=[...root.querySelectorAll("[data-uid]")]; if(!els.length) return;
+  const ids=[...new Set(els.map(e=>e.dataset.uid).filter(Boolean))];
+  if(user&&ids.length){ try{ const ps=await user.profiles(ids); ids.forEach(id=>{names[id]=(ps[id]&&ps[id].name)||"Someone";}); }catch(e){} }
+  els.forEach(e=>{const id=e.dataset.uid; e.textContent=!id?"–":id===me?"you":(names[id]||"…");});
+}
+function onData(kind){
+  if(kind==="robot") { renderTeamStrip(); renderOverview(); fillRobotForm(); renderMeasure(); planCache=null; simFitCache=null; renderFormulaStep(); renderValidate(); }
+  if(kind==="formula"){ renderTeamStrip(); renderOverview(); renderFormulaStep(); renderValidate(); }
+  if(kind==="speeds"){ renderMeasure(); renderOverview(); }
+  if(kind==="shots"){ renderFormulaStep(); renderOverview(); }
+  if(kind==="validation"){ renderValidate(); renderOverview(); }
+  renderRail();
+}
+async function initData(){
+  try{ db=await claude.use("db"); }catch(e){ db=null; }
+  try{ user=await claude.use("user"); }catch(e){ user=null; }
+  try{ downloads=await claude.use("downloads"); }catch(e){ downloads=null; }
+  if(user){ try{ me=await user.id(); }catch(e){} try{ const cw=await user.can("data.write"); if(cw===false) canWrite=false; }catch(e){} }
+  if(!db){
+    $("syncdot").className="dot off"; $("synctext").textContent="Team data unavailable here · entries stay on this page";
+    banner("Team data isn't available in this view (open the lab in claude.ai while signed in). You can still use every step, but entries are lost when you leave.");
+    return;
+  }
+  live=true; $("syncdot").className="dot on"; $("synctext").textContent=canWrite?"Team data · live":"Team data · view only";
+  if(!canWrite) banner("You can see the team data but not add to it. Ask the page owner to give you Contributor access.");
+  applyWriteState();
+  const errCb=()=>{ $("syncdot").className="dot off"; $("synctext").textContent="Team data disconnected · reload to reconnect"; };
+  db.doc("team/robot").onSnapshot(s=>{ robotSaved=s.exists; robot=s.exists?{...ROBOT_DEF,...s.data()}:{...ROBOT_DEF}; onData("robot"); },errCb);
+  db.doc("team/formula").onSnapshot(s=>{ formulaDoc=s.exists?s.data():null; onData("formula"); },errCb);
+  ["speeds","shots","validation"].forEach(coll=>{
+    db.collection(coll).orderBy("at","desc").limit(1000).onSnapshot(s=>{ store[coll]=s.docs.map(d=>({id:d.id,...d.data()})); onData(coll); },errCb);
+  });
+}
+
+/* ================= router ================= */
+const ROUTES=["start","learn","simulate","measure","formula","validate"];
+let current="start";
+function route(scroll){
+  const h=(location.hash||"").slice(1); current=ROUTES.includes(h)?h:"start";
+  document.querySelectorAll("[data-page]").forEach(s=>{s.hidden=s.id!=="r-"+current;});
+  document.querySelectorAll(".rail a").forEach(a=>{ if(a.dataset.route===current) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  readColors();
+  if(current==="simulate") simResize();
+  if(current==="measure") renderMeasure();
+  if(current==="formula") renderFormulaStep();
+  if(current==="validate") renderValidate();
+  if(scroll) window.scrollTo({top:0});
+}
+window.addEventListener("hashchange",()=>route(true));
+
+/* ================= step status ================= */
+function quizScore(){const a=LS.get("bb.q2",{}); return QUIZ.filter((q,i)=>a[i]===q.a).length;}
+function missionCount(){const m=LS.get("bb.m2",{}); return MISSIONS.filter((x,i)=>m[i]).length;}
+function speedStats(){
+  const rows=store.speeds.map(r=>calcSpeed(r)).filter(Boolean);
+  let sxy=0,sxx=0; rows.forEach(r=>{sxy+=r.v*r.vs; sxx+=r.vs*r.vs;});
+  const eta=sxx>0?sxy/sxx:NaN, etas=rows.map(r=>r.eta), mean=etas.reduce((a,b)=>a+b,0)/(etas.length||1);
+  const sd=etas.length>1?Math.sqrt(etas.reduce((a,b)=>a+(b-mean)**2,0)/(etas.length-1)):NaN;
+  const sfs=rows.filter(r=>r.sf!=null).map(r=>r.sf), sf=sfs.length?sfs.reduce((a,b)=>a+b,0)/sfs.length:NaN;
+  return {rows,eta,sd,sf,nsf:sfs.length};
+}
+function shotGroups(){
+  const g={}; store.shots.forEach(s=>{const d=Math.round(s.d); (g[d]=g[d]||[]).push(s);});
+  return Object.keys(g).map(Number).sort((a,b)=>a-b).map(d=>{const arr=g[d], sc=arr.filter(s=>s.res==="score").map(s=>s.rpm);
+    return {d,n:arr.length,scored:sc.length,lo:sc.length?Math.min(...sc):null,hi:sc.length?Math.max(...sc):null};});
+}
+function valStats(){const v=store.validation, n=v.length, made=v.filter(x=>x.res==="made").length;
+  const bins={}; v.forEach(x=>{const b=Math.floor(x.d/6)*6; (bins[b]=bins[b]||{n:0,m:0}); bins[b].n++; if(x.res==="made") bins[b].m++;});
+  return {n,made,pct:n?made/n*100:0,bins,count:k=>v.filter(x=>x.res===k).length};}
+function status(){
+  const ss=speedStats(), groups=shotGroups(), vs=valStats();
+  return {
+    learn:{done:quizScore()===QUIZ.length, items:[[quizScore()>=4,"Read sections 2.1 to 2.4 and answer their checks"],[quizScore()===QUIZ.length,`Answer all ${QUIZ.length} checks correctly (${quizScore()}/${QUIZ.length})`]]},
+    simulate:{done:missionCount()>=MISSIONS.length, items:null},
+    measure:{done:robotSaved&&ss.rows.length>=5&&robot.measured, items:[
+      [robotSaved,"Robot setup saved"],[ss.rows.length>=5,`At least 5 speed measurements (${ss.rows.length})`],[!!robot.measured,"Measured η saved to the team robot"]]},
+    formula:{done:store.shots.length>=30&&groups.filter(g=>g.scored>0).length>=3&&!!formulaDoc, items:[
+      [store.shots.length>=30,`At least 30 test shots logged (${store.shots.length})`],
+      [groups.filter(g=>g.scored>0).length>=3,`Scoring shots at 3 or more distances (${groups.filter(g=>g.scored>0).length})`],
+      [!!formulaDoc,"Team formula saved"]]},
+    validate:{done:vs.n>=20&&Object.keys(vs.bins).length>=3&&vs.pct>=80, items:[
+      [vs.n>=20,`At least 20 validation shots (${vs.n})`],[Object.keys(vs.bins).length>=3,`Shots from 3 or more distance ranges (${Object.keys(vs.bins).length})`],[vs.n>0&&vs.pct>=80,`80% or more made (${vs.n?f1(vs.pct,0):"–"}%)`]]}
+  };
+}
+function todoHTML(items){return items.map(([ok,t])=>`<li class="${ok?"ok":""}"><span class="ck">${ok?"✓":""}</span><span>${esc(t)}</span></li>`).join("");}
+function renderRail(){
+  const st=status();
+  ["learn","simulate","measure","formula","validate"].forEach(k=>{const a=document.querySelector(`.rail a[data-route="${k}"]`); a.classList.toggle("done",st[k].done);});
+  $("todo-learn").innerHTML=todoHTML(st.learn.items);
+  $("todo-measure").innerHTML=todoHTML(st.measure.items);
+  $("todo-formula").innerHTML=todoHTML(st.formula.items);
+  $("todo-validate").innerHTML=todoHTML(st.validate.items);
+}
+function robotText(){return `${robot.ang}° · ${robot.wheel} mm · η ${f1(robot.eta)}${robot.measured?" (measured)":" (default)"}`;}
+function renderTeamStrip(){
+  $("ts-robot").textContent=robotText();
+  $("ts-formula").textContent=formulaDoc?`${["","linear","quadratic","cubic"][formulaDoc.deg]||"saved"}, ${formulaDoc.dmin}–${formulaDoc.dmax} in`:"not saved";
+}
+function renderOverview(){
+  const st=status(), ss=speedStats(), vs=valStats(), groups=shotGroups();
+  const cards=[
+    ["simulate","1","Explore","Play with the simulator first: predict, launch, notice.", `${missionCount()}/${MISSIONS.length} missions`],
+    ["learn","2","Understand","Clear explanations of what you saw, with one worked example.", `${quizScore()}/${QUIZ.length} checks`],
+    ["measure","3","Measure","Film shots to find the robot's real η and spin.", `${ss.rows.length} measurements${robot.measured?" · η saved":""}`],
+    ["formula","4","Build formula","Plan test shots, log them, fit the formula.", `${store.shots.length} shots · ${groups.filter(g=>g.scored>0).length} distances${formulaDoc?" · saved":""}`],
+    ["validate","5","Validate","Prove 80% made on the field.", vs.n?`${vs.n} shots · ${f1(vs.pct,0)}% made`:"no shots yet"]];
+  $("loopcards").innerHTML=cards.map(([r,n,t,p,s])=>{const done=st[r].done; return `<a class="loopcard panel" href="#${r}"><span class="num">STEP ${n}</span><h3>${t}</h3><p>${p}</p><span class="chip ${done?"good":"idle"}">${done?"✓ done":esc(s)}</span></a>`;}).join("");
+  $("ov-robot").innerHTML=[["Hood angle",robot.ang+"°"],["Launch height",robot.h0+" in"],["Wheel",robot.wheel+" mm"],["Gear ratio",robot.gear+" : 1"],["Game piece",BALLS[robot.ball].name],
+    ["Spin",robot.spinType==="none"?"none":robot.spinType+"spin, factor "+f1(robot.spinFactor)],["Transfer efficiency η",f1(robot.eta)+(robot.measured?" measured":" default guess")]]
+    .map(([a,b])=>`<tr><td>${a}</td><td class="n">${esc(b)}</td></tr>`).join("");
+  if(formulaDoc&&formulaDoc.coeffs){ $("ov-formula").textContent=formulaLine(formulaDoc.coeffs,"distance","targetRpm","java");
+    $("ov-formula-note").textContent=`Valid ${formulaDoc.dmin}–${formulaDoc.dmax} in · fitted to ${formulaDoc.source==="sim"?"simulator":"real shots"}${formulaDoc.r2!=null?" · R² "+f1(formulaDoc.r2,3):""}`; }
+  else { $("ov-formula").textContent="No formula saved yet."; $("ov-formula-note").textContent=""; }
+}
+
+/* ================= 2 UNDERSTAND (lesson) ================= */
+const QUIZ=[
+  {sec:1,q:"A 100 mm wheel spins at 3000 RPM. What is the rim speed?",o:["5.0 m/s","15.7 m/s","31.4 m/s","300 m/s"],a:1,
+   fb:"v_rim = π × 0.100 m × 3000 / 60 = 15.7 m/s. Remember to change mm to m first."},
+  {sec:2,q:"A ball leaves at 8.0 m/s, 60° above horizontal. What is v_y?",o:["4.0 m/s","6.9 m/s","8.0 m/s","13.9 m/s"],a:1,
+   fb:"v_y = 8.0 × sin 60° = 8.0 × 0.866 = 6.9 m/s. (v_x = 8.0 × cos 60° = 4.0 m/s.)"},
+  {sec:3,q:"With no air, a ball has vₓ = 4.0 m/s at launch. What is vₓ 0.3 s later?",o:["4.0 m/s","Less than 4.0 m/s, because gravity slows it","0 m/s, because it reaches the top","More than 4.0 m/s"],a:0,
+   fb:"Gravity pulls straight down, so it only changes v_y. With no air, nothing pushes sideways, so vₓ stays 4.0 m/s."},
+  {sec:3,q:"The opening is 1.2 m away horizontally and vₓ = 4.0 m/s. How long until the ball gets there?",o:["0.30 s","3.3 s","4.8 s","0.12 s"],a:0,
+   fb:"t = Δx / vₓ = 1.2 / 4.0 = 0.30 s."},
+  {sec:4,q:"The ball's speed doubles. What happens to the drag force?",o:["It stays the same","It doubles","It becomes 4 times bigger","It halves"],a:2,
+   fb:"Drag grows with v². Doubling v multiplies the force by 2² = 4."},
+  {sec:5,q:"You switch from no spin to backspin at the same distance. The RPM needed to score…",o:["goes up","goes down","stays the same"],a:1,
+   fb:"Backspin creates an upward Magnus force, so the ball carries farther and needs less launch speed."},
+  {sec:6,q:"Which direction gives the cleanest entry into the upward blue CELL?",o:["Rising at 45°","Perfectly horizontal","Coming down at about 30°","Straight down"],a:2,
+   fb:"The opening faces the robot and points 30° above horizontal, so the CELL's axis runs 30° below horizontal. A ball moving along that axis enters cleanly."},
+  {sec:7,q:"Which input changes the needed RPM the most?",o:["Ball mass ±10%","Drag coefficient ±0.1","Transfer efficiency η ±0.05","Ball diameter ±0.1 in"],a:2,
+   fb:"η ±0.05 moves the needed RPM by 10–12%. Mass, drag coefficient and diameter each move it by about 1% or less."}];
+function heightAt(c,rpm,xIn){
+  const b=BALLS[c.ball], rr=b.d/2*IN, A=Math.PI*rr*rr, v=exitV(c,rpm), k=c.air?0.5*RHO*CD*A/b.m:0, w0=c.air?omegaOf(c,v):0;
+  const a=c.ang*Math.PI/180; let x=0,y=c.h0*IN,vx=v*Math.cos(a),vy=v*Math.sin(a),t=0; const dt=0.0005, X=xIn*IN;
+  while(t<4&&y>0){const px=x,py=y,pvx=vx,pvy=vy; const sp=Math.hypot(vx,vy); let ax=-k*sp*vx, ay=-G-k*sp*vy;
+    if(w0&&sp>0.01){const Sr=rr*Math.abs(w0)/sp, CL=Sr/(1+2*Sr), kl=0.5*RHO*CL*A/b.m*Math.sign(w0); ax+=-kl*sp*vy; ay+=kl*sp*vx;}
+    vx+=ax*dt; vy+=ay*dt; x+=vx*dt; y+=vy*dt; t+=dt;
+    if(x>=X){const f=(X-px)/(x-px); return {y:(py+(y-py)*f)/IN,vx:pvx+(vx-pvx)*f,vy:pvy+(vy-pvy)*f,t:t-dt*(1-f)};}}
+  return null;
+}
+function qHTML(i){const q=QUIZ[i], ans=LS.get("bb.q2",{}), a=ans[i];
+  return `<div class="q" style="padding:0"><span class="hint">Check ${i+1} of ${QUIZ.length}</span><b>${esc(q.q)}</b><div class="opts">${q.o.map((o,j)=>{
+    const cls=a===j?(j===q.a?"right":"wrong"):""; return `<button data-q="${i}" data-o="${j}" class="${cls}">${esc(o)}</button>`;}).join("")}</div>
+    <p class="fb" aria-live="polite">${a===undefined?"":(a===q.a?"<b>Correct.</b> ":"<b>Not quite.</b> ")+esc(q.fb)}</p></div>`;}
+const n2=(x,d)=>Number(x).toFixed(d);
+function renderLesson(){
+  // Worked example: one shot followed through every section
+  const ex={d:36,rpm:3000,D:96,eta:0.45,ang:55,h0:12};
+  const Dm=ex.D/1000, rim=Math.PI*Dm*ex.rpm/60, v=ex.eta*rim, a=ex.ang*Math.PI/180, vx=v*Math.cos(a), vy=v*Math.sin(a);
+  const cxIn=ex.d+MOUTH_L*U[0]/2, cyIn=LIP_H+MOUTH_L*U[1]/2, dx=cxIn*IN, y0=ex.h0*IN;
+  const t=dx/vx, y=y0+vy*t-0.5*G*t*t, yIn=y/IN, tp=vy/G, vyEnd=vy-G*t, phi=Math.atan2(vyEnd,vx)*180/Math.PI, off=Math.abs(phi+30);
+  const b=BALLS.pollen, r=b.d/2*IN, A=Math.PI*r*r, Fd=0.5*RHO*CD*A*v*v, Wt=b.m*G, w=v/r, wrpm=w*60/(2*Math.PI), Sr=r*w/v, CL=Sr/(1+2*Sr), FM=0.5*RHO*CL*A*v*v;
+  const base={d:ex.d,h0:ex.h0,ang:ex.ang,wheel:ex.D,eta:ex.eta,ball:"pollen",spinType:"none",spinFactor:1,air:false};
+  const hNo=heightAt(base,ex.rpm,cxIn), hDrag=heightAt({...base,air:true},ex.rpm,cxIn), hSpin=heightAt({...base,air:true,spinType:"back"},ex.rpm,cxIn);
+  const hs=h=>h?n2(h.y,1)+" in":"hits the floor first";
+  const exBox=`<div class="seen"><b>The worked example</b>Robot 36 in from the lip of the opening · launch height 12 in · hood angle 55° · 96 mm wheel at 3000 RPM · η = 0.45 · POLLEN. Same shot in every section.</div>`;
+  const sec=(n,title,seen,body)=>`<article class="lsec panel" id="l${n}"><span class="kicker">2.${n}</span><h3>${title}</h3>${seen?`<div class="seen"><b>In the simulator</b>${seen}</div>`:""}${body}${QUIZ.map((q,i)=>q.sec===n?qHTML(i):"").join("")}</article>`;
+  const formula=(big,syms)=>`<div class="formula">${big.map(x=>`<div class="big">${x}</div>`).join("")}<dl class="syms">${syms.map(([s,d])=>`<dt>${s}</dt><dd>${d}</dd>`).join("")}</dl></div>`;
+  const worked=steps=>`<div class="worked"><h4>Worked example</h4><ol>${steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`;
+  const tryit=t=>`<p class="trylink">Try it: ${t} <a href="#simulate">Open the simulator →</a></p>`;
+  $("lesson").innerHTML=[
+`<article class="lsec panel"><span class="kicker">Before you start</span><h3>Symbols, units and conversions</h3>
+<p>Physics formulas only work in consistent units. This lesson uses meters (m), seconds (s), kilograms (kg) and radians. Convert inches and millimeters before you calculate.</p>
+<div class="glossary">
+<div><span>1 in</span><span>= 0.0254 m</span></div><div><span>1 mm</span><span>= 0.001 m</span></div><div><span>g</span><span>9.81 m/s², gravity's pull</span></div>
+<div><span>v</span><span>speed (m/s)</span></div><div><span>vₓ, v_y</span><span>horizontal and vertical parts of v</span></div><div><span>θ</span><span>launch angle above horizontal</span></div>
+<div><span>t</span><span>time since launch (s)</span></div><div><span>RPM</span><span>revolutions per minute</span></div><div><span>η</span><span>"eta", transfer efficiency (0 to 1)</span></div>
+<div><span>ρ</span><span>"rho", air density, 1.2 kg/m³</span></div><div><span>m</span><span>mass (kg): POLLEN ≈ 0.0249</span></div><div><span>r, A</span><span>ball radius (m) and area π r² (m²)</span></div>
+</div>${exBox}</article>`,
+sec(1,"From flywheel to ball speed","Moving the Flywheel speed or Wheel diameter slider changes the exit speed in direct proportion: double the RPM and the exit speed doubles.",
+`<p>The flywheel's rim travels one circumference, π·D, every turn. At a given RPM the wheel makes RPM ÷ 60 turns each second, so the rim speed is π·D·RPM ÷ 60.</p>
+<p>The ball is squeezed between the spinning wheel and the fixed hood. If it rolled perfectly, its center would move at exactly half the rim speed (η = 0.5), because one side touches the moving rim and the other side touches the still hood. Real balls slip and squash, so η is usually between 0.30 and 0.45.</p>
+${formula(["v_rim = π · D · RPM / 60","v = η · v_rim"],[["v_rim","rim speed (m/s)"],["D","wheel diameter (m)"],["η","transfer efficiency: ball speed ÷ rim speed, no units"],["v","ball launch speed (m/s)"]])}
+${worked([`D = 96 mm = <span class="m">0.096 m</span>`,`v_rim = π × 0.096 × 3000 / 60 = <span class="m ans">${n2(rim,2)} m/s</span>`,`v = 0.45 × ${n2(rim,2)} = <span class="m ans">${n2(v,2)} m/s</span>`])}
+${tryit("set η to 0.50 and 0.30 and watch the exit speed.")}`),
+sec(2,"Splitting the launch velocity","The blue arrow (vₓ) and purple arrow (v_y) at the launch point are the two parts of the gold arrow (v).",
+`<p>The ball leaves along the hood at angle θ above horizontal. Treat its velocity as two separate parts: horizontal, toward the HIVE, and vertical, upward. They form a right triangle with v as the hypotenuse, so sine and cosine split it.</p>
+${formula(["vₓ = v · cos θ","v_y = v · sin θ"],[["vₓ","horizontal speed (m/s)"],["v_y","vertical speed (m/s), positive means up"],["θ","launch angle (degrees)"]])}
+${worked([`vₓ = ${n2(v,2)} × cos 55° = ${n2(v,2)} × 0.574 = <span class="m ans">${n2(vx,2)} m/s</span>`,`v_y = ${n2(v,2)} × sin 55° = ${n2(v,2)} × 0.819 = <span class="m ans">${n2(vy,2)} m/s</span>`,`Check with Pythagoras: √(${n2(vx,2)}² + ${n2(vy,2)}²) = ${n2(Math.hypot(vx,vy),2)} m/s ✓`])}`),
+sec(3,"Flight without air: time and height","Turn off “Include air”. The 0.1 s dots are now exactly evenly spaced left to right, but not up and down.",
+`<p>With no air, nothing pushes the ball sideways, so <b>vₓ stays the same for the whole flight</b>. Gravity pulls straight down and reduces v_y by 9.81 m/s every second.</p>
+<p>To find the ball's height when it reaches the HIVE, use the horizontal motion to find the time, then put that time into the vertical equation.</p>
+${formula(["t = Δx / vₓ","y = y₀ + v_y·t − ½·g·t²"],[["Δx","horizontal distance from launch to the target point (m)"],["y₀","launch height (m)"],["y","height at time t (m)"],["½·g·t²","how far gravity has pulled the ball down"]])}
+${worked([`The opening is tilted, so its center is 3.5 in beyond the lip: Δx = 36 + 3.5 = 39.5 in = <span class="m">${n2(dx,3)} m</span>. y₀ = 12 in = <span class="m">${n2(y0,3)} m</span>.`,
+`t = ${n2(dx,3)} / ${n2(vx,2)} = <span class="m ans">${n2(t,3)} s</span>`,
+`y = ${n2(y0,3)} + ${n2(vy,2)}×${n2(t,3)} − ½×9.81×${n2(t,3)}² = <span class="m ans">${n2(y,3)} m = ${n2(yIn,1)} in</span>`,
+`The center of the opening is ${n2(cyIn,1)} in high, so this shot passes ${n2(Math.abs(cyIn-yIn),1)} in ${yIn<cyIn?"below":"above"} the center.`,
+`The top of the arc comes at t = v_y / g = ${n2(vy,2)} / 9.81 = ${n2(tp,3)} s. That is ${tp>t?"after":"before"} the ball reaches the HIVE, so the ball is still <b>${tp>t?"rising":"falling"}</b> when it gets there. Remember this for 2.6.`])}`),
+sec(4,"Air drag","Switch “Include air” on and off. With air on, the dots bunch closer together and the RPM needed to score goes up by about 10%.",
+`<p>Air pushes against the ball in the direction opposite its motion. The force grows with the <b>square</b> of the speed. POLLEN is light (about 25 g) for its size (7.1 cm across), so drag is large compared with its weight. Drag slows vₓ too, which is why the dots bunch up.</p>
+${formula(["F_drag = ½ · ρ · C_d · A · v²"],[["ρ","air density, 1.2 kg/m³"],["C_d","drag coefficient, about 0.45 for a ball"],["A","cross-section area, π r² (m²)"]])}
+${worked([`r = 1.4 in = ${n2(r,4)} m, so A = π × ${n2(r,4)}² = <span class="m">${A.toFixed(5)} m²</span>`,
+`F_drag = ½ × 1.2 × 0.45 × ${A.toFixed(5)} × ${n2(v,2)}² = <span class="m ans">${n2(Fd,4)} N</span>`,
+`Weight = m·g = 0.0249 × 9.81 = ${n2(Wt,3)} N, so drag is <span class="m ans">${n2(Fd/Wt*100,0)}% of the weight</span> at launch.`,
+`Result: at the opening's center, the ball is at ${hs(hNo)} with no air and ${hs(hDrag)} with drag.`])}`),
+sec(5,"Spin and the Magnus effect","Try Backspin, No spin and Topspin. The purple dotted line shows the same shot without spin, so you can see how much spin bends the path.",
+`<p>With the wheel under the ball and the hood above it, the ball rolls along the hood, so its top surface moves backward. That is <b>backspin</b>.</p>
+<p>A spinning ball drags a thin layer of air around with it. With backspin, the air leaving the ball is thrown downward behind it. By Newton's third law, the air pushes the ball upward. This Magnus force always acts at right angles to the ball's path: up for backspin, down for topspin. Its strength depends on the spin ratio S, which compares how fast the surface spins with how fast the ball travels.</p>
+${formula(["ω = spin factor · v / r","S = r·ω / v","F_M = ½ · ρ · C_L · A · v²,  with C_L ≈ S / (1 + 2S)"],[["ω","spin rate (rad/s); × 60 ÷ 2π gives rpm"],["spin factor","1 means the ball rolls on the hood without slipping; real launchers are lower"],["C_L","lift coefficient. This formula is an approximation from sports-ball experiments."]])}
+${worked([`With spin factor 1: ω = ${n2(v,2)} / ${n2(r,4)} = ${n2(w,0)} rad/s ≈ <span class="m ans">${n2(wrpm,0)} rpm</span>`,
+`S = ${n2(r,4)} × ${n2(w,0)} / ${n2(v,2)} = ${n2(Sr,2)}, so C_L ≈ ${n2(Sr,2)} / (1 + 2×${n2(Sr,2)}) = <span class="m">${n2(CL,3)}</span>`,
+`F_M = ½ × 1.2 × ${n2(CL,3)} × ${A.toFixed(5)} × ${n2(v,2)}² = <span class="m ans">${n2(FM,4)} N</span>, about ${n2(FM/Wt*100,0)}% of the weight`,
+`Result: at the opening's center, the ball is at ${hs(hDrag)} with drag only and ${hs(hSpin)} with drag and backspin.`])}
+<p class="hint">Because C_L is only an approximation, Step 3 measures the real spin from video.</p>`),
+sec(6,"The target: entering the opening","The verdict “ENTERS RISING · may bounce out” and the “Clean entries only” box both come from this section.",
+`<p>The upward blue CELL is a box 12 in deep. It is tipped so its opening faces the robot and points 30° above horizontal. The opening is 14 in tall, from 53.5 in to 65.6 in above the tiles. A ball moving straight down the middle of the box travels <b>30° below horizontal</b>.</p>
+<p>The farther the ball's direction is from that line, the more it hits the walls inside the CELL. A ball that is still rising hits the upper wall and can bounce back out. The simulator calls an entry clean when the ball's direction is within 60° of the CELL's axis.</p>
+${formula(["v_y,end = v_y − g·t","φ = atan( v_y,end / vₓ )","off-axis angle = | φ − (−30°) |"],[["φ","direction of travel at the opening; positive means rising"],["−30°","the CELL's axis: 30° below horizontal"]])}
+${worked([`v_y,end = ${n2(vy,2)} − 9.81 × ${n2(t,3)} = <span class="m">${n2(vyEnd,2)} m/s</span> (${vyEnd>0?"still going up":"coming down"})`,
+`φ = atan(${n2(vyEnd,2)} / ${n2(vx,2)}) = <span class="m ans">${n2(phi,1)}°</span>`,
+`Off-axis angle = |${n2(phi,1)} + 30| = <span class="m ans">${n2(off,1)}°</span>, which is ${off>60?"more than 60°, so this is a risky entry":"within 60°, so this is a clean entry"}.`,
+`To fix a rising entry, the ball has to come down into the CELL: use a steeper hood angle, or shoot from farther back.`])}`),
+sec(7,"Why we measure the real robot",null,
+`<p>The simulator is a model. Some inputs are easy to measure with a tape measure or protractor. Others can only be found by testing. The table shows how much the RPM needed to score changes when one input changes (simulated at 36 in, 55°, 96 mm wheel, η = 0.45, backspin).</p>
+<div class="tablewrap" style="max-height:none"><table><thead><tr><th>Input change</th><th class="n">Change in RPM needed</th><th>Easy to measure?</th></tr></thead><tbody>
+<tr><td>Transfer efficiency η ±0.05</td><td class="n">−10% to +12%</td><td>No: needs video</td></tr>
+<tr><td>Spin: full backspin vs none</td><td class="n">13%</td><td>No: needs video</td></tr>
+<tr><td>Robot driving ±0.5 m/s</td><td class="n">−13% to +9%</td><td>Yes, from odometry</td></tr>
+<tr><td>Air on vs off</td><td class="n">10%</td><td>Built into the model</td></tr>
+<tr><td>Launch angle ±2°</td><td class="n">−11% to +5%</td><td>Yes, protractor</td></tr>
+<tr><td>Launch height +1 in</td><td class="n">−4%</td><td>Yes, tape measure</td></tr>
+<tr><td>Ball mass +10%, diameter or C_d</td><td class="n">about 1% or less</td><td>Yes, scale and calipers</td></tr>
+</tbody></table></div>
+<p>η and spin matter most, and they are the two numbers nobody can guess. That's why Step 3 measures them with slow-motion video before the team builds its formula.</p>`)
+  ].join("");
+}
+$("lesson").addEventListener("click",e=>{const b=e.target.closest("button[data-q]"); if(!b) return; const ans=LS.get("bb.q2",{}); ans[+b.dataset.q]=+b.dataset.o; LS.set("bb.q2",ans);
+  const art=b.closest("article"), y=art.getBoundingClientRect().top; renderLesson(); renderRail(); renderOverview();
+  const na=$(art.id); if(na){ window.scrollBy(0,na.getBoundingClientRect().top-y); } });
+
+/* ================= 1 EXPLORE: missions ================= */
+const MISSIONS=[
+  "Press Launch. The dots are 0.1 s apart. Are they evenly spaced left to right? Up and down?",
+  "At 36 in, find a flywheel speed that scores (Auto-aim helps). What range does the green band on the RPM slider show?",
+  "Predict first: does the robot need more or less RPM at 24 in than at 44 in? Then test it.",
+  "Use the shot map at 36 in. Which launch angle has the tallest green band, the most forgiving shot?",
+  "Turn “Include air” off. Does the RPM needed to score go up or down? By about how much?",
+  "Compare Backspin, No spin and Topspin at the same distance. Which needs the least RPM?",
+  "Turn on “Clean entries only”. What happens to close-range shots? Write down why you think so."];
+function renderMissions(){const m=LS.get("bb.m2",{}), notes=LS.get("bb.n2",{});
+  $("todo-sim").innerHTML=MISSIONS.map((t,i)=>`<li style="flex-direction:column;gap:4px"><label><input type="checkbox" data-m="${i}" ${m[i]?"checked":""}><span><b>${i+1}.</b> ${esc(t)}</span></label>
+    <input type="text" class="vname" data-note="${i}" placeholder="Your answer" value="${esc(notes[i]||"")}" style="width:100%;margin-left:24px;max-width:calc(100% - 24px);font-family:var(--font-body)" aria-label="Answer to mission ${i+1}"></li>`).join("");}
+$("todo-sim").addEventListener("change",e=>{const i=e.target.dataset.m; if(i===undefined) return; const m=LS.get("bb.m2",{}); m[i]=e.target.checked; LS.set("bb.m2",m); renderRail(); renderOverview();});
+$("todo-sim").addEventListener("input",e=>{const i=e.target.dataset.note; if(i===undefined) return; const n=LS.get("bb.n2",{}); n[i]=e.target.value; LS.set("bb.n2",n);});
+
+/* ================= simulator ================= */
+const S={d:36,h0:12,ang:55,rpm:3300,wheel:96,eta:0.45,ball:"pollen",spinType:"back",spinFactor:1,air:true,strict:false,slow:false};
+let trails=[], anim=null, cur=null, mapGrid=null, mapKey="", winRanges=[], lastWinKey="";
+const cv=$("cv"), ctx=cv.getContext("2d"), mapCv=$("map"), mctx=mapCv.getContext("2d");
+const W0=-26,W1=162,H0=-14,H1=86; let VW=0,VH=0,sc=1,ox=0,oy=0;
+function simResize(){const r=sizeCanvas(cv,0.56); if(!r) return; [VW,VH]=r; sc=Math.min(VW/(W1-W0),VH/(H1-H0)); ox=(VW-(W1-W0)*sc)/2-W0*sc; oy=VH-((VH-(H1-H0)*sc)/2)+H0*sc;
+  sizeCanvas(mapCv,0.62); simUpdate(true);}
+const X=x=>ox+x*sc, Y=y=>oy-y*sc;
+function line(x1,y1,x2,y2,col,w,dash){ctx.beginPath();ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w||1;ctx.moveTo(X(x1),Y(y1));ctx.lineTo(X(x2),Y(y2));ctx.stroke();ctx.setLineDash([]);}
+function txt(s,x,y,col,align,size,font){ctx.fillStyle=col;ctx.font=(size||11)+"px "+(font||"IBM Plex Mono, monospace");ctx.textAlign=align||"left";ctx.fillText(s,X(x),Y(y));}
+function arrow(x1,y1,x2,y2,col,w){line(x1,y1,x2,y2,col,w);const a=Math.atan2(Y(y2)-Y(y1),X(x2)-X(x1)),h=7;
+  ctx.beginPath();ctx.fillStyle=col;ctx.moveTo(X(x2),Y(y2));ctx.lineTo(X(x2)-h*Math.cos(a-0.45),Y(y2)-h*Math.sin(a-0.45));ctx.lineTo(X(x2)-h*Math.cos(a+0.45),Y(y2)-h*Math.sin(a+0.45));ctx.closePath();ctx.fill();}
+function poly(pts,fill,stroke,w){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w||1;ctx.stroke();}}
+function pathLine(pts,col,w,dash,alpha){ctx.beginPath();ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.globalAlpha=alpha||1;ctx.lineWidth=w;pts.forEach((p,i)=>i?ctx.lineTo(X(p[1]),Y(p[2])):ctx.moveTo(X(p[1]),Y(p[2])));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+function mouth(d){const lip=[d,LIP_H], top=[d+MOUTH_L*U[0],LIP_H+MOUTH_L*U[1]]; return {lip,top,center:[(lip[0]+top[0])/2,(lip[1]+top[1])/2]};}
+function draw(ballPt){
+  if(!VW) return;
+  ctx.clearRect(0,0,VW,VH); ctx.fillStyle=C["--field"]; ctx.fillRect(0,0,VW,VH);
+  for(let x=0;x<=W1;x+=24) line(x,0,x,H1,C["--line"],1);
+  for(let y=12;y<H1;y+=12){line(W0,y,W1,y,C["--line"],0.6,[2,4]); txt(y+" in",W0+1,y+1,C["--muted"],"left",10);}
+  line(W0,0,W1,0,C["--ink"],1.5);
+  for(let x=0;x<=W1;x+=6) line(x,0,x,x%24===0?-2.2:-1.1,C["--muted"],1);
+  for(let x=0;x<=144;x+=24) txt(x+"",x,-5.2,C["--muted"],"center",10);
+  const m=mouth(S.d);
+  line(S.d-6,LIP_H,W1,LIP_H,C["--muted"],0.8,[4,3]); line(S.d,m.top[1],W1,m.top[1],C["--muted"],0.8,[4,3]);
+  txt("lip 53.5",W1-1,LIP_H+1,C["--muted"],"right",10); txt("top 65.6",W1-1,m.top[1]+1,C["--muted"],"right",10);
+  const cb=(LIP_H-PIVOT_H-CELL_OUT*HS)/HC, ct=cb+CELL_H, P=[S.d+CELL_OUT*HC-cb*HS,PIVOT_H];
+  const W=(bx,by)=>[P[0]+bx*HC+by*HS,P[1]-bx*HS+by*HC];
+  const wallX=P[0]-72; if(wallX>W0){line(wallX,0,wallX,12,C["--muted"],3); txt("wall",wallX+1.5,13.5,C["--muted"],"left",10);}
+  line(P[0],P[1],P[0]-19.475,0,C["--muted"],3); line(P[0],P[1],P[0]+19.475,0,C["--muted"],3); line(P[0]-21,0.4,P[0]+21,0.4,C["--muted"],4);
+  const up=[W(-CELL_OUT,cb),W(-CELL_OUT,ct),W(-CELL_IN,ct),W(-CELL_IN,cb)], dn=[W(CELL_OUT,cb),W(CELL_OUT,ct),W(CELL_IN,ct),W(CELL_IN,cb)];
+  poly(dn,C["--cell"],C["--hive"],2); poly(up,C["--cell"],C["--hive"],2.4);
+  [-1,1].forEach(sg=>{const a1=W(sg*CELL_OUT,cb+9.5),a2=W(sg*CELL_IN,cb+9.5); line(a1[0],a1[1],a2[0],a2[1],C["--hive"],0.8,[3,3]);});
+  ctx.beginPath();ctx.strokeStyle=C["--ink"];ctx.lineWidth=3;
+  [W(-CELL_OUT,cb),W(-CELL_IN+1,cb),W(0,0),W(CELL_IN-1,cb),W(CELL_OUT,cb)].forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.stroke();
+  ctx.beginPath();ctx.fillStyle=C["--ink"];ctx.arc(X(P[0]),Y(P[1]),4.5,0,7);ctx.fill();
+  txt("pivot 43.95 in",P[0]-4,P[1]-4,C["--muted"],"right",10);
+  line(m.lip[0],m.lip[1],m.top[0],m.top[1],C["--honey"],4.5);
+  txt("opening",m.top[0]+2,m.top[1]+2.5,C["--honey"],"left",11);
+  line(m.lip[0],m.lip[1],m.lip[0]+11,m.lip[1],C["--muted"],1,[3,2]);
+  ctx.beginPath();ctx.strokeStyle=C["--muted"];ctx.lineWidth=1;ctx.arc(X(m.lip[0]),Y(m.lip[1]),8*sc,0,TILT);ctx.stroke();
+  txt("30°",m.lip[0]+9,m.lip[1]-3,C["--muted"],"left",10);
+  txt("BLUE HIVE",P[0]+8,60,C["--hive"],"left",13,"Chakra Petch, sans-serif");
+  // robot
+  const bh=Math.max(5,S.h0-2.5);
+  poly([[-17,1.6],[1,1.6],[1,bh],[-17,bh]],C["--panel"],C["--ink"],1.5);
+  [[-13,1.6],[-3,1.6]].forEach(w=>{ctx.beginPath();ctx.fillStyle=C["--ink"];ctx.arc(X(w[0]),Y(w[1]),2*sc,0,7);ctx.fill();});
+  const a=S.ang*Math.PI/180, wr=S.wheel/25.4/2, fc=[-Math.cos(a)*3-Math.sin(a)*(wr+1.4), S.h0-Math.sin(a)*3-Math.cos(a)*(wr+1.4)];
+  ctx.beginPath();ctx.strokeStyle=C["--ink"];ctx.lineWidth=1.5;ctx.arc(X(fc[0]),Y(fc[1]),wr*sc,0,7);ctx.stroke();
+  line(-Math.cos(a)*8,S.h0-Math.sin(a)*8,0,S.h0,C["--ink"],3);
+  trails.forEach(tp=>pathLine(tp,C["--muted"],1.5,null,.35));
+  if(cur.ghost) pathLine(cur.ghost,C["--vy"],1.6,[2,4],.7);
+  if(S.spinType!=="none"&&S.air){const w=Math.abs(omegaOf(S,exitV(S,S.rpm)))*60/(2*Math.PI);
+    txt(S.spinType==="back"?"↺ backspin":"↻ topspin",W0+2,-6.5,C["--vy"],"left",11); txt(Math.round(w)+" rpm",W0+2,-10.5,C["--vy"],"left",11);}
+  pathLine(cur.pts,C["--honey"],2,[6,4]);
+  let next=0.1; ctx.fillStyle=C["--honey"]; cur.pts.forEach(p=>{if(p[0]>=next-1e-9){ctx.beginPath();ctx.arc(X(p[1]),Y(p[2]),2.6,0,7);ctx.fill();next+=0.1;}});
+  let ap=cur.pts[0]; cur.pts.forEach(p=>{if(p[2]>ap[2]) ap=p;});
+  if(ap[1]>4&&ap!==cur.pts[cur.pts.length-1]){line(ap[1],0,ap[1],ap[2],C["--muted"],0.8,[2,3]); txt("peak "+ap[2].toFixed(1)+" in",ap[1]-2,ap[2]+3,C["--ink"],"right",11);}
+  const v=exitV(S,S.rpm), q=2.2, vx=v*Math.cos(a)*q, vy=v*Math.sin(a)*q;
+  arrow(0,S.h0,vx,S.h0,C["--vx"],2); arrow(vx,S.h0,vx,S.h0+vy,C["--vy"],2); arrow(0,S.h0,vx,S.h0+vy,C["--honey"],2.5);
+  txt("vₓ",vx/2,S.h0-3.6,C["--vx"],"center",12); txt("v_y",vx+2,S.h0+vy/2,C["--vy"],"left",12); txt("v",vx/2-3,S.h0+vy/2+2,C["--honey"],"right",13);
+  line(0,-11,S.d,-11,C["--ink"],1); line(0,-12,0,-10,C["--ink"],1); line(S.d,-12,S.d,-10,C["--ink"],1);
+  txt("d = "+S.d+" in ("+(S.d*IN).toFixed(2)+" m)",S.d/2,-10.2,C["--ink"],"center",11);
+  if(cur.px!==undefined){ctx.beginPath();ctx.strokeStyle=C["--"+VERDICT[cur.kind][1]];ctx.lineWidth=2;ctx.arc(X(cur.px),Y(cur.py),7,0,7);ctx.stroke();}
+  if(ballPt){const b=BALLS[S.ball]; ctx.beginPath();ctx.fillStyle=C[b.col];ctx.strokeStyle=C["--ink"];ctx.lineWidth=1;ctx.arc(X(ballPt[0]),Y(ballPt[1]),Math.max(3,b.d/2*sc),0,7);ctx.fill();ctx.stroke();}
+}
+// shot map
+const MA0=20,MA1=85,MR0=300,MR1=6000,MRS=100;
+function computeMap(){const key=[S.d,S.h0,S.wheel,S.eta,S.ball,S.air,S.spinType,S.spinFactor].join("|"); if(mapGrid&&key===mapKey) return; mapKey=key;
+  mapGrid=[]; for(let ang=MA0;ang<=MA1;ang++){const col=[]; for(let r=MR0;r<=MR1;r+=MRS) col.push(sim({...S,ang},r,false,0.004).kind); mapGrid.push(col);}}
+function drawMap(){
+  const w=mapCv.clientWidth,h=mapCv.clientHeight; if(!w||!mapGrid) return; const pl=44,pb=28,pt=8,pr=8,gw=w-pl-pr,gh=h-pt-pb;
+  mctx.clearRect(0,0,w,h); mctx.fillStyle=C["--field"]; mctx.fillRect(0,0,w,h);
+  const nc=mapGrid.length,nr=mapGrid[0].length,cw=gw/nc,ch=gh/nr;
+  const fill={score:[C["--good"],1],risky:[C["--good"],S.strict?.18:.4],lip:[C["--warn"],1],rim:[C["--warn"],1],short:[C["--bad"],.28],floor:[C["--bad"],.18],long:[C["--vx"],.25]};
+  for(let i=0;i<nc;i++)for(let j=0;j<nr;j++){const f=fill[mapGrid[i][j]];mctx.globalAlpha=f[1];mctx.fillStyle=f[0];mctx.fillRect(pl+i*cw,pt+gh-(j+1)*ch,Math.ceil(cw),Math.ceil(ch));}
+  mctx.globalAlpha=1; mctx.fillStyle=C["--muted"]; mctx.font="10px IBM Plex Mono, monospace";
+  mctx.textAlign="center"; for(let a=20;a<=85;a+=10){mctx.fillText(a+"°",pl+(a-MA0+0.5)/(MA1-MA0+1)*gw,h-pb+14);} mctx.fillText("launch angle θ",pl+gw/2,h-3);
+  mctx.textAlign="right"; for(let r=1000;r<=6000;r+=1000){mctx.fillText(r/1000+"k",pl-6,pt+gh-(r-MR0+50)/(MR1-MR0+100)*gh+3);}
+  mctx.save();mctx.translate(10,pt+gh/2);mctx.rotate(-Math.PI/2);mctx.textAlign="center";mctx.fillText("RPM",0,0);mctx.restore();
+  const mx=pl+(S.ang-MA0+0.5)/(MA1-MA0+1)*gw,my=pt+gh-(S.rpm-MR0+50)/(MR1-MR0+100)*gh;
+  mctx.strokeStyle=C["--ink"];mctx.lineWidth=2;mctx.beginPath();mctx.arc(mx,my,6,0,7);mctx.stroke();
+  mctx.strokeStyle=C["--panel"];mctx.lineWidth=1;mctx.beginPath();mctx.arc(mx,my,8.5,0,7);mctx.stroke();
+  mapCv._g={pl,pt,gw,gh};
+  // most forgiving angle from the grid
+  let best=null; mapGrid.forEach((col,i)=>{let run=0,bestRun=0,end=0; col.forEach((k,j)=>{if(scores(k,S.strict)){run++; if(run>bestRun){bestRun=run;end=j;}} else run=0;});
+    if(bestRun>0){const lo=MR0+(end-bestRun+1)*MRS, hi=MR0+end*MRS, rel=(hi-lo+MRS)/((lo+hi)/2); if(!best||rel>best.rel) best={ang:MA0+i,lo,hi,rel};}});
+  $("bestang").textContent=best?`Most forgiving angle at ${S.d} in: about ${best.ang}° (scores from ~${best.lo} to ${best.hi} rpm, ±${f1(best.rel*50,0)}%).`:"Nothing scores from this distance with these settings.";
+}
+function mapPick(e){const g=mapCv._g; if(!g) return; const r=mapCv.getBoundingClientRect(), fx=(e.clientX-r.left-g.pl)/g.gw, fy=1-(e.clientY-r.top-g.pt)/g.gh; if(fx<0||fx>1||fy<0||fy>1) return;
+  S.ang=clamp(Math.round(MA0+fx*(MA1-MA0+1)-0.5),20,85); S.rpm=clamp(Math.round((MR0+fy*(MR1-MR0+100)-50)/10)*10,300,6000); syncInputs(); simUpdate();}
+let mDown=false; mapCv.addEventListener("pointerdown",e=>{mDown=true;mapCv.setPointerCapture(e.pointerId);mapPick(e);});
+mapCv.addEventListener("pointermove",e=>{if(mDown) mapPick(e);}); mapCv.addEventListener("pointerup",()=>mDown=false);
+function computeWindow(){winRanges=scan(S,10);
+  const pct=r=>((r-300)/5700*100).toFixed(2)+"%"; const stops=["var(--line) 0%"];
+  winRanges.forEach(([a,b])=>stops.push("var(--line) "+pct(a),"var(--good) "+pct(a),"var(--good) "+pct(b+10),"var(--line) "+pct(b+10)));
+  stops.push("var(--line) 100%"); $("rpm").style.background="linear-gradient(to right,"+stops.join(",")+")";}
+function nearestRange(){let best=null,bd=1e9; winRanges.forEach(w=>{const dd=Math.abs((w[0]+w[1])/2-S.rpm); if(dd<bd){bd=dd;best=w;}}); return best;}
+// formulas
+function ideal(){
+  const m=mouth(S.d), a=S.ang*Math.PI/180, v=exitV(S,S.rpm), vx=v*Math.cos(a), vy=v*Math.sin(a);
+  const dx=m.center[0]*IN, dy=(m.center[1]-S.h0)*IN, y0=S.h0*IN, t=dx/vx, yAt=y0+vy*t-0.5*G*t*t, tp=vy/G, ymax=y0+vy*vy/(2*G), vyf=vy-G*t, ent=Math.atan2(-vyf,vx)*180/Math.PI;
+  const den=2*(dx*Math.tan(a)-dy), vNeed=den>0?dx/Math.cos(a)*Math.sqrt(G/den):NaN, rpmNeed=vNeed/(S.eta*S.wheel/2000)*60/(2*Math.PI);
+  const b=BALLS[S.ball], A=Math.PI*(b.d/2*IN)**2;
+  return {m,a,v,vx,vy,dx,dy,y0,t,yAt,tp,ymax,vyf,ent,den,vNeed,rpmNeed,b,A,KE:0.5*b.m*v*v,Fd:0.5*RHO*CD*A*v*v,Wt:b.m*G};
+}
+function card(n,title,eqs,subs,why){return `<article class="f panel"><header><span class="stepnum">${n}</span><h3>${title}</h3></header>${eqs.map(e=>`<div class="eq">${e}</div>`).join("")}<div class="subs">${subs.join("<br>")}</div><p class="why">${why}</p></article>`;}
+function heightAtX(pts,x){if(!pts) return NaN; for(let i=1;i<pts.length;i++){if(pts[i][1]>=x){const a=pts[i-1],b=pts[i],f=(x-a[1])/(b[1]-a[1]||1); return a[2]+(b[2]-a[2])*f;}} return NaN;}
+function renderFormulas(I){
+  const w=2*Math.PI*S.rpm/60, rw=S.wheel/2000, vs=w*rw, B=x=>`<b>${x}</b>`, los=Math.atan2(I.dy,I.dx)*180/Math.PI;
+  const rb=I.b.d/2*IN, wb=Math.abs(omegaOf(S,I.v)), Sr=I.v>0?rb*wb/I.v:0, CL=Sr/(1+2*Sr), FM=0.5*RHO*CL*I.A*I.v*I.v;
+  let cmp=""; if(cur&&cur.ghost){const h1=heightAtX(cur.pts,S.d),h0=heightAtX(cur.ghost,S.d); if(!isNaN(h1)&&!isNaN(h0)) cmp=`At the lip the ball is <b>${f1(Math.abs(h1-h0),1)} in ${h1>h0?"higher":"lower"}</b> than with no spin`;}
+  const mag=[`ω = ${B(f1(S.spinFactor))} · ${f1(I.v)} / ${f1(rb,4)} = ${f1(wb,0)} rad/s = <b>${Math.round(wb*60/(2*Math.PI))} rpm</b>`,`S = ${f1(Sr)}, C_L = <b>${f1(CL,3)}</b>`,
+    `F_M = ½·1.2·${f1(CL,3)}·${I.A.toFixed(5)}·${f1(I.v)}² = <b>${f1(FM,4)} N</b> (${f1(FM/I.Wt*100,0)}% of weight)`]; if(cmp) mag.push(cmp); if(!S.air) mag.push("Air is off, so the simulation ignores this force.");
+  $("fgrid").innerHTML=[
+    card(1,"Flywheel → ball speed",["ω = 2π · RPM / 60","v = η · ω · r"],[`ω = 2π · ${B(S.rpm)} / 60 = ${f1(w,1)} rad/s`,`rim speed = ${f1(w,1)} · ${B(f1(rw,3))} m = ${f1(vs)} m/s`,`v = ${B(f1(S.eta))} · ${f1(vs)} = <b>${f1(I.v)} m/s</b>`],"The ball keeps only the fraction η of the rim speed."),
+    card(2,"Split the velocity",["vₓ = v · cos θ","v_y = v · sin θ"],[`vₓ = ${f1(I.v)} · cos ${B(S.ang+"°")} = <b>${f1(I.vx)} m/s</b>`,`v_y = ${f1(I.v)} · sin ${B(S.ang+"°")} = <b>${f1(I.vy)} m/s</b>`],"Without air, vₓ never changes, so the 0.1 s dots are evenly spaced left to right."),
+    card(3,"Time to reach the CELL",["t = Δx / vₓ"],[`Δx = ${f1(I.m.center[0],1)} in = ${f1(I.dx)} m`,`t = ${f1(I.dx)} / ${f1(I.vx)} = <b>${f1(I.t,3)} s</b>`],"Only horizontal speed decides how long the ball flies before it reaches the HIVE."),
+    card(4,"Height when it gets there",["y = y₀ + v_y·t − ½·g·t²"],[`y = ${f1(I.y0,3)} + ${f1(I.vy)}·${f1(I.t,3)} − ½·9.81·${f1(I.t,3)}²`,`y = <b>${f1(I.yAt,3)} m</b> (${f1(I.yAt/IN,1)} in); opening center ${f1(I.m.center[1],1)} in`],"Gravity pulls the ball down by ½gt²."),
+    card(5,"Peak of the arc",["t_peak = v_y / g","y_max = y₀ + v_y² / (2g)"],[`t_peak = <b>${f1(I.tp,3)} s</b>`,`y_max = <b>${f1(I.ymax/IN,1)} in</b>`],I.tp<I.t?"The ball peaks before the HIVE, so it is coming down as it enters.":"The ball is still rising at the HIVE and may hit the inside top of the CELL."),
+    card(6,"Entry angle",["φ = atan( −(v_y − g·t) / vₓ )"],[`φ = <b>${f1(I.ent,1)}°</b> ${I.ent>0?"downward":"upward"}`,`best ≈ 30° downward (straight along the CELL)`],"The farther φ is from 30° down, the smaller the opening looks to the ball."),
+    card(7,"Speed needed to hit the center",["v = (Δx / cos θ) · √( g / (2(Δx·tan θ − Δy)) )"],I.den>0?[`v = <b>${f1(I.vNeed)} m/s</b>`,`RPM needed = <b>${Math.round(I.rpmNeed)}</b> (you have ${S.rpm})`]:[`<b>No speed works</b>: θ is below the line of sight to the CELL (${f1(los,1)}°).`],"Solving the height equation for v gives the ideal answer. Air means a real robot needs a bit more."),
+    card(8,"Energy and air drag",["KE = ½·m·v²","F_drag = ½·ρ·C_d·A·v²"],[`KE = <b>${f1(I.KE,3)} J</b>`,`F_drag = <b>${f1(I.Fd,3)} N</b> = ${f1(I.Fd/I.Wt*100,0)}% of weight`],"When drag is a big share of weight, the no-air formulas start to miss."),
+    card(9,"Spin and the Magnus effect",["ω_ball = spin factor · v / r_ball","F_M = ½·ρ·C_L·A·v²  ⟂ velocity"],mag,"Backspin lifts the ball so it carries farther with less RPM. Topspin pushes it down. Spin factor 1 is ideal rolling along the hood; real launchers measure lower, which Step 3 finds.")
+  ].join("");
+}
+function syncInputs(){["d","h0","ang","rpm","wheel","eta"].forEach(k=>$(k).value=S[k]); $("sf").value=S.spinFactor;
+  $("b-pollen").setAttribute("aria-pressed",S.ball==="pollen"); $("b-nectar").setAttribute("aria-pressed",S.ball==="nectar");
+  ["back","none","top"].forEach(k=>$("sp-"+k).setAttribute("aria-pressed",S.spinType===k)); $("air").checked=S.air; $("strict").checked=S.strict;}
+function simLabels(){
+  $("d-o").textContent=S.d+" in"; $("h0-o").textContent=S.h0+" in"; $("ang-o").textContent=S.ang+"°"; $("rpm-o").textContent=S.rpm+" rpm";
+  $("wheel-o").textContent=S.wheel+" mm"; $("eta-o").textContent=S.eta.toFixed(2); $("sf-o").textContent=S.spinFactor.toFixed(2);
+  $("d-h").textContent=(S.d+19.3).toFixed(0)+" in to the pivot · "+(S.d>44?"past ~44 in needs a diagonal shot":(S.d/24).toFixed(1)+" tiles");
+  const w=Math.abs(omegaOf(S,exitV(S,S.rpm)))*60/(2*Math.PI); $("sf").disabled=S.spinType==="none";
+  $("sf-h").textContent=S.spinType==="none"?"no spin":`ball spin ≈ ${Math.round(w)} rpm (1 = rolls along the hood without slipping)`;
+}
+function simUpdate(force){
+  if(current!=="simulate"&&!force) return;
+  simLabels();
+  const wk=[S.d,S.h0,S.wheel,S.eta,S.ball,S.air,S.ang,S.spinType,S.spinFactor,S.strict].join("|"); if(force||wk!==lastWinKey){computeWindow();lastWinKey=wk;}
+  computeMap(); drawMap();
+  cur=sim(S,S.rpm,true); cur.ghost=(S.spinType!=="none"&&S.air)?sim(S,S.rpm,true,0.002,true).pts:null;
+  const V=VERDICT[cur.kind], vEl=$("verdict"); let cls=V[1]; if(cur.kind==="risky"&&S.strict) cls="bad"; vEl.textContent=V[0]; vEl.className="pill "+cls;
+  $("s-v").textContent=f1(exitV(S,S.rpm))+" m/s"; $("s-t").textContent=cur.px!==undefined?f1(cur.t,3)+" s":"–";
+  $("s-e").textContent=cur.ent!==undefined?`${f1(Math.abs(cur.ent),0)}° ${cur.ent>=0?"down":"up"}`:"–";
+  const nr=nearestRange(); $("rpm-h").textContent=nr?`green = scores · nearest window ${nr[0]}–${nr[1]} rpm`:"no RPM scores at this angle and distance";
+  const I=ideal(); renderFormulas(I);
+  const simEnt=cur.ent!==undefined?f1(cur.ent,1)+"°":"–";
+  $("cmp").innerHTML=[["Time to CELL",f1(I.t,3)+" s",cur.px!==undefined?f1(cur.t,3)+" s":"never"],["Height at CELL",f1(I.yAt/IN,1)+" in",cur.py!==undefined?f1(cur.py,1)+" in":"–"],
+    ["Highest point before CELL",f1((I.tp<I.t?I.ymax:I.yAt)/IN,1)+" in",f1(cur.apex,1)+" in"],["Entry angle (+ = down)",f1(I.ent,1)+"°",simEnt],
+    ["RPM to hit center",isNaN(I.rpmNeed)?"impossible":Math.round(I.rpmNeed)+"",nr?Math.round((nr[0]+nr[1])/2)+"":"none"]].map(x=>`<tr><td>${x[0]}</td><td class="n">${x[1]}</td><td class="n">${x[2]}</td></tr>`).join("");
+  $("win").textContent=nr?`Scoring window at ${S.ang}°: ${nr[0]}–${nr[1]} rpm (±${f1((nr[1]-nr[0])/(nr[0]+nr[1])*100,1)}%). Wider is more forgiving.`:`Nothing scores at ${S.ang}° from ${S.d} in.`;
+  if(!anim) draw();
+}
+function launch(){const path=cur.pts; anim={path,t0:performance.now()};
+  const step=now=>{if(!anim) return; const t=(now-anim.t0)/1000*(S.slow?0.25:1), p=anim.path; let i=0; while(i<p.length-1&&p[i+1][0]<t) i++;
+    if(i>=p.length-1){trails.push(p); if(trails.length>6) trails.shift(); anim=null; draw(); return;}
+    const a=p[i],b=p[i+1],f=(t-a[0])/(b[0]-a[0]||1); draw([a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]); requestAnimationFrame(step);}; requestAnimationFrame(step);}
+let raf=0; const schedule=()=>{cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>simUpdate());};
+["d","h0","ang","rpm","wheel","eta"].forEach(k=>$(k).addEventListener("input",e=>{S[k]=parseFloat(e.target.value);schedule();}));
+$("sf").addEventListener("input",e=>{S.spinFactor=parseFloat(e.target.value);schedule();});
+$("b-pollen").onclick=()=>{S.ball="pollen";syncInputs();simUpdate();}; $("b-nectar").onclick=()=>{S.ball="nectar";syncInputs();simUpdate();};
+["back","none","top"].forEach(k=>$("sp-"+k).onclick=()=>{S.spinType=k;syncInputs();simUpdate();});
+$("air").onchange=e=>{S.air=e.target.checked;simUpdate();}; $("strict").onchange=e=>{S.strict=e.target.checked;simUpdate();}; $("slow").onchange=e=>{S.slow=e.target.checked;};
+$("launch").onclick=launch; $("clear").onclick=()=>{trails=[];simUpdate();};
+$("aim").onclick=()=>{const nr=nearestRange(); if(nr) S.rpm=Math.round((nr[0]+nr[1])/20)*10; else {const I=ideal(); if(!isNaN(I.rpmNeed)) S.rpm=clamp(Math.round(I.rpmNeed/10)*10,300,6000);} syncInputs(); simUpdate();};
+$("loadteam").onclick=()=>{Object.assign(S,{ang:robot.ang,h0:robot.h0,wheel:clamp(robot.wheel,48,140),eta:clamp(robot.eta,0.25,0.95),ball:robot.ball,spinType:robot.spinType,spinFactor:clamp(robot.spinFactor,0,1)});
+  const nr=widest(scan(S,10)); if(nr) S.rpm=Math.round((nr[0]+nr[1])/20)*10; syncInputs(); simUpdate(); };
+
+/* ================= 3 MEASURE ================= */
+function calcSpeed(r){
+  if(!(r.rpm>0&&r.fps>0&&r.frames>0&&r.dist>0)) return null;
+  const t=r.frames/r.fps, v=r.dist*IN/t, vs=r.rpm*2*Math.PI/60*(robot.wheel/2000), eta=v/vs, rb=BALLS[robot.ball].d/2*IN;
+  const sf=r.turns>0?(r.turns*2*Math.PI/t)/(v/rb):null; return {...r,t,v,vs,eta,sf};
+}
+function fillRobotForm(){
+  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#robotform")) return;
+  $("rb-ang").value=robot.ang; $("rb-h0").value=robot.h0; $("rb-wheel").value=robot.wheel; $("rb-gear").value=robot.gear; $("rb-ball").value=robot.ball; $("rb-spin").value=robot.spinType;
+}
+$("rb-save").onclick=async()=>{
+  const ang=parseFloat($("rb-ang").value), h0=parseFloat($("rb-h0").value), wheel=parseFloat($("rb-wheel").value), gear=parseFloat($("rb-gear").value);
+  if(!(ang>=20&&ang<=85&&h0>=4&&h0<=20&&wheel>=40&&wheel<=160&&gear>0)){ $("rb-msg").textContent="Check the numbers: angle 20–85°, height 4–20 in, wheel 40–160 mm."; return; }
+  const ok=await setDoc("team/robot",{...robot,ang,h0,wheel,gear,ball:$("rb-ball").value,spinType:$("rb-spin").value});
+  $("rb-msg").textContent=ok?"Saved for the whole team.":"";
+};
+$("sp-add").onclick=async()=>{
+  const r={rpm:parseFloat($("sp-rpm").value),fps:parseFloat($("sp-fps").value),frames:parseFloat($("sp-frames").value),dist:parseFloat($("sp-dist").value),turns:parseFloat($("sp-turns").value)||0};
+  const c=calcSpeed(r); if(!c){ $("sp-msg").textContent="Fill in RPM, fps, frames and distance."; return; }
+  if(c.eta<0.1||c.eta>1.0){ $("sp-msg").textContent=`That gives η = ${f1(c.eta)}, which isn't physically likely. Re-count the frames.`; return; }
+  if(await addRow("speeds",r)){ $("sp-msg").textContent=`Added: ${f1(c.v)} m/s, η = ${f1(c.eta)}.`; $("sp-frames").value=""; $("sp-turns").value=""; }
+};
+$("sp-rows").addEventListener("click",e=>{const b=e.target.closest("button[data-del]"); if(b) delRow("speeds",b.dataset.del);});
+$("sp-use").onclick=async()=>{const st=speedStats(); if(!(st.rows.length>=3&&isFinite(st.eta))){ $("sp-use-msg").textContent="Add at least 3 measurements first."; return; }
+  const ok=await setDoc("team/robot",{...robot,eta:Math.round(st.eta*1000)/1000,spinFactor:isFinite(st.sf)?Math.round(clamp(st.sf,0,1.5)*100)/100:robot.spinFactor,measured:true});
+  $("sp-use-msg").textContent=ok?`Saved η = ${f1(st.eta,3)}${isFinite(st.sf)?`, spin factor ${f1(st.sf)}`:""} for the team.`:"";};
+function renderMeasure(){
+  const st=speedStats();
+  $("sp-kpis").innerHTML=`<div class="kpi"><b>${st.rows.length}</b><span>measurements</span></div><div class="kpi"><b>${isFinite(st.eta)?f1(st.eta,3):"–"}</b><span>η (best fit)</span></div>
+    <div class="kpi"><b>${isFinite(st.sd)?"±"+f1(st.sd,3):"–"}</b><span>spread (1 SD)</span></div><div class="kpi"><b>${isFinite(st.sf)?f1(st.sf):"–"}</b><span>spin factor (${st.nsf} rows)</span></div>
+    <div class="kpi"><b>${f1(robot.eta,3)}</b><span>team robot now${robot.measured?"":" (default)"}</span></div>`;
+  const rows=[...st.rows].sort((a,b)=>b.at-a.at);
+  $("sp-rows").innerHTML=rows.length?rows.map(r=>`<tr><td class="n">${r.rpm}</td><td class="n">${f1(r.v)} m/s</td><td class="n">${f1(r.eta,3)}</td><td class="n">${r.sf!=null?f1(r.sf):"–"}</td><td class="who" data-uid="${esc(r.by||"")}"></td><td><button class="x" data-del="${esc(r.id)}" data-write aria-label="Delete row">×</button></td></tr>`).join("")
+    :`<tr><td colspan="6" class="muted">No measurements yet. Film a shot and add the first row above.</td></tr>`;
+  fillNames($("sp-rows")); applyWriteState(); drawEta(st);
+}
+function drawEta(st){
+  const c=$("etacv"), r=sizeCanvas(c,0.62); if(!r) return; const [w,h]=r, x=c.getContext("2d"), pl=46,pr=12,pt=12,pb=34,gw=w-pl-pr,gh=h-pt-pb;
+  x.clearRect(0,0,w,h); x.fillStyle=C["--field"]; x.fillRect(0,0,w,h);
+  const xmax=Math.max(20,...st.rows.map(q=>q.vs))*1.1, ymax=Math.max(8,...st.rows.map(q=>q.v))*1.15;
+  const xs=v=>pl+v/xmax*gw, ys=v=>pt+gh-v/ymax*gh;
+  x.font="10px IBM Plex Mono, monospace"; x.strokeStyle=C["--line"]; x.fillStyle=C["--muted"]; x.lineWidth=1;
+  for(let v=0;v<=ymax;v+=2){x.beginPath();x.moveTo(pl,ys(v));x.lineTo(pl+gw,ys(v));x.stroke();x.textAlign="right";x.fillText(v,pl-6,ys(v)+3);}
+  x.textAlign="center"; for(let v=0;v<=xmax;v+=5) x.fillText(v,xs(v),pt+gh+14); x.fillText("wheel rim speed (m/s)",pl+gw/2,h-4);
+  x.save();x.translate(11,pt+gh/2);x.rotate(-Math.PI/2);x.fillText("ball speed (m/s)",0,0);x.restore();
+  if(isFinite(st.eta)){x.strokeStyle=C["--vx"];x.lineWidth=2;x.beginPath();x.moveTo(xs(0),ys(0));const xe=Math.min(xmax,ymax/st.eta);x.lineTo(xs(xe),ys(xe*st.eta));x.stroke();
+    x.fillStyle=C["--ink"];x.textAlign="left";x.font="12px IBM Plex Mono, monospace";x.fillText("η = "+f1(st.eta,3),xs(xe*0.55)+8,ys(xe*0.55*st.eta)-8);}
+  st.rows.forEach(q=>{x.beginPath();x.fillStyle=C["--ink"];x.strokeStyle=C["--field"];x.lineWidth=2;x.arc(xs(q.vs),ys(q.v),5,0,7);x.fill();x.stroke();});
+  if(!st.rows.length){x.fillStyle=C["--muted"];x.textAlign="center";x.font="13px IBM Plex Sans, sans-serif";x.fillText("Your measurements will appear here",pl+gw/2,pt+gh/2);}
+}
+
+/* ================= 4 FORMULA ================= */
+let deg=2, fitSrc="real", fmt="java", fitC=null, fitPts=[], planCache=null, simFitCache=null;
+const robotCfg=d=>({...robot,d,air:true,strict:false});
+const rkey=()=>[robot.ang,robot.h0,robot.wheel,robot.ball,robot.spinType,robot.spinFactor,robot.eta].join("|");
+function plan(){
+  const ds=$("tp-list").value.split(/[ ,;]+/).map(Number).filter(x=>x>=6&&x<=140).slice(0,12);
+  const key=rkey()+"|"+ds.join(","); if(planCache&&planCache.key===key) return planCache.rows;
+  const rows=ds.map(d=>{const w=widest(scan(robotCfg(d),20)); return {d,w,from:w?Math.max(300,Math.floor((w[0]-200)/100)*100):null,to:w?Math.ceil((w[1]+200)/100)*100:null};});
+  planCache={key,rows}; return rows;
+}
+function simFitPoints(){
+  const key=rkey(); if(simFitCache&&simFitCache.key===key) return simFitCache.pts;
+  const pts=[]; for(let d=18;d<=60;d+=6){const w=widest(scan(robotCfg(d),20)); if(w) pts.push({d,rpm:Math.round((w[0]+w[1])/20)*10,lo:w[0],hi:w[1]});}
+  simFitCache={key,pts}; return pts;
+}
+function polyfit(xs,ys,p){const s=100,n=p+1,M=[...Array(n)].map(()=>Array(n+1).fill(0));
+  xs.forEach((x0,k)=>{const x=x0/s,pw=[];for(let j=0;j<2*n;j++)pw.push(Math.pow(x,j));for(let i=0;i<n;i++){for(let j=0;j<n;j++)M[i][j]+=pw[i+j];M[i][n]+=ys[k]*pw[i];}});
+  for(let c=0;c<n;c++){let pv=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[pv][c]))pv=r;[M[c],M[pv]]=[M[pv],M[c]];if(Math.abs(M[c][c])<1e-12)return null;
+    for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/M[c][c];for(let j=c;j<=n;j++)M[r][j]-=f*M[c][j];}}
+  return M.map((row,i)=>row[n]/row[i]/Math.pow(s,i));}
+const evalPoly=(c,x)=>c.reduce((s,ci,i)=>s+ci*Math.pow(x,i),0);
+const VN=(id,def)=>{const v=$(id).value.trim().replace(/[^A-Za-z0-9_]/g,""); return v||def;};
+function formulaLine(c,dn,rn,format){
+  const num=x=>String(Number(x.toPrecision(6)));
+  if(format==="math"){let e="RPM = "+num(c[0]); const sup=["","","²","³"]; for(let i=1;i<c.length;i++) e+=(c[i]<0?" − ":" + ")+num(Math.abs(c[i]))+" × d"+sup[i]; return e;}
+  let e="double "+rn+" = "+num(c[0]); for(let i=1;i<c.length;i++) e+=(c[i]<0?" - ":" + ")+num(Math.abs(c[i]))+" * "+Array(i).fill(dn).join(" * "); return e+";";
+}
+const RES_COL={score:"--good",short:"--bad",long:"--vx",bounce:"--warn"}, RES_TXT={score:"Scored",short:"Short",long:"Long",bounce:"Bounced out"};
+document.querySelectorAll("[data-res]").forEach(b=>{b.setAttribute("data-write",""); b.onclick=async()=>{
+  const d=parseFloat($("sh-d").value), rpm=parseFloat($("sh-rpm").value);
+  if(!(d>=6&&d<=140&&rpm>=100&&rpm<=7000)){ $("sh-msg").textContent="Enter a distance (6–140 in) and RPM (100–7000)."; return; }
+  if(await addRow("shots",{d,rpm,res:b.dataset.res})) $("sh-msg").textContent=`Logged ${RES_TXT[b.dataset.res].toLowerCase()} at ${d} in, ${rpm} rpm.`;
+};});
+$("sh-rows").addEventListener("click",e=>{const b=e.target.closest("button[data-del]"); if(b) delRow("shots",b.dataset.del);});
+$("tp-list").addEventListener("change",()=>renderFormulaStep());
+function setSeg(ids,on){ids.forEach(id=>$(id).setAttribute("aria-pressed",id===on));}
+$("src-real").onclick=()=>{fitSrc="real";setSeg(["src-real","src-sim"],"src-real");renderFormulaStep();};
+$("src-sim").onclick=()=>{fitSrc="sim";setSeg(["src-real","src-sim"],"src-sim");renderFormulaStep();};
+[1,2,3].forEach(k=>$("deg"+k).onclick=()=>{deg=k;setSeg(["deg1","deg2","deg3"],"deg"+k);renderFormulaStep();});
+$("fmt-java").onclick=()=>{fmt="java";setSeg(["fmt-java","fmt-math"],"fmt-java");renderCode();};
+$("fmt-math").onclick=()=>{fmt="math";setSeg(["fmt-java","fmt-math"],"fmt-math");renderCode();};
+$("vd").addEventListener("input",renderCode); $("vr").addEventListener("input",renderCode);
+$("savef").setAttribute("data-write","");
+$("savef").onclick=async()=>{ if(!fitC) return; const P=fitPts;
+  const ok=await setDoc("team/formula",{coeffs:fitC.slice(),deg,dmin:P[0].d,dmax:P[P.length-1].d,r2:fitC.r2!=null?fitC.r2:null,source:fitSrc,robot:robotText()});
+  $("formnote").textContent=ok?"Saved as the team formula. Test it in Step 5.":$("formnote").textContent; };
+function renderFormulaStep(){
+  if(current!=="formula"&&current!=="start") { /* keep cheap when hidden */ }
+  const rows=plan(), groups=shotGroups();
+  $("tp-rows").innerHTML=rows.length?rows.map(r=>{const n=store.shots.filter(s=>Math.abs(s.d-r.d)<=1).length;
+    return `<tr><td class="n">${r.d} in</td><td class="n">${r.w?r.w[0]+"–"+r.w[1]:"none"}</td><td class="n">${r.w?`${r.from} → ${r.to} by 100`:"try a different hood angle"}</td><td class="n">${n}</td></tr>`;}).join("")
+    :`<tr><td colspan="4" class="muted">Type some distances above, for example 24, 30, 36, 42.</td></tr>`;
+  const simW=d=>{const r=rows.find(x=>x.d===d); if(r) return r.w; return widest(scan(robotCfg(d),20));};
+  $("an-rows").innerHTML=groups.length?groups.map(g=>{const w=simW(g.d); return `<tr><td class="n">${g.d} in</td><td class="n">${g.n}</td><td class="n">${g.scored}</td><td class="n">${g.lo!=null?g.lo+"–"+g.hi:"–"}</td><td class="n">${w?Math.round((w[0]+w[1])/2):"–"}</td></tr>`;}).join("")
+    :`<tr><td colspan="5" class="muted">No test shots yet.</td></tr>`;
+  const recent=[...store.shots].sort((a,b)=>b.at-a.at).slice(0,200);
+  $("sh-rows").innerHTML=recent.length?recent.map(s=>`<tr><td class="n">${s.d}</td><td class="n">${s.rpm}</td><td><span class="chip" style="color:var(${RES_COL[s.res]||"--muted"})">${RES_TXT[s.res]||esc(s.res)}</span></td><td class="who" data-uid="${esc(s.by||"")}"></td><td><button class="x" data-del="${esc(s.id)}" data-write aria-label="Delete shot">×</button></td></tr>`).join("")
+    :`<tr><td colspan="5" class="muted">Shots you log appear here for everyone.</td></tr>`;
+  fillNames($("sh-rows"));
+  const realPts=groups.filter(g=>g.scored>0).map(g=>({d:g.d,rpm:(g.lo+g.hi)/2,lo:g.lo,hi:g.hi}));
+  let note="";
+  if(fitSrc==="real"&&realPts.length<deg+1){ note=`Only ${realPts.length} distance${realPts.length===1?"":"s"} with scoring shots, so this fit uses the simulator for now. `; fitPts=simFitPoints(); }
+  else fitPts=fitSrc==="real"?realPts:simFitPoints();
+  fitC=fitPts.length>deg?polyfit(fitPts.map(p=>p.d),fitPts.map(p=>p.rpm),deg):null;
+  if(fitC){const ys=fitPts.map(p=>p.rpm),mean=ys.reduce((a,b)=>a+b,0)/ys.length;let ssr=0,sst=0,inside=0;
+    fitPts.forEach(p=>{const f=evalPoly(fitC,p.d);ssr+=(p.rpm-f)**2;sst+=(p.rpm-mean)**2;if(f>=p.lo&&f<=p.hi)inside++;});
+    fitC.r2=sst>0?1-ssr/sst:1; fitC.rmse=Math.sqrt(ssr/ys.length); fitC.inside=inside;
+    $("fitstats").innerHTML=`${note}Fitted to ${fitPts.length} ${fitSrc==="real"&&!note?"tested":"simulated"} distances · R² <b>${f1(fitC.r2,4)}</b> · RMS error <b>${f1(fitC.rmse,0)} rpm</b> · inside the scoring window at <b>${inside} of ${fitPts.length}</b>`;}
+  else $("fitstats").textContent=note+`Need at least ${deg+1} distances for a ${["","linear","quadratic","cubic"][deg]} fit.`;
+  applyWriteState(); $("savef").disabled=!fitC||!canWrite;
+  drawFit(rows); renderCode(); renderRail();
+}
+let fitGeom=null;
+function drawFit(rows){
+  const c=$("fitcv"), r=sizeCanvas(c,0.5); if(!r) return; const [w,h]=r, x=c.getContext("2d"), pl=50,pr=12,pt=12,pb=34,gw=w-pl-pr,gh=h-pt-pb;
+  x.clearRect(0,0,w,h); x.fillStyle=C["--field"]; x.fillRect(0,0,w,h);
+  const allD=[...store.shots.map(s=>s.d),...rows.map(q=>q.d),...fitPts.map(p=>p.d)], allR=[...store.shots.map(s=>s.rpm),...rows.filter(q=>q.w).flatMap(q=>q.w),...fitPts.map(p=>p.rpm)];
+  const X0=allD.length?Math.max(0,Math.min(...allD)-6):10, X1=allD.length?Math.max(...allD)+6:60;
+  let lo=allR.length?Math.min(...allR):1000, hi=allR.length?Math.max(...allR):5000; lo=Math.floor((lo-200)/500)*500; hi=Math.ceil((hi+200)/500)*500; if(hi-lo<1000) hi=lo+1000;
+  const xs=d=>pl+(d-X0)/(X1-X0)*gw, ys=v=>pt+gh-(v-lo)/(hi-lo)*gh; fitGeom={xs,ys};
+  x.font="10px IBM Plex Mono, monospace"; x.strokeStyle=C["--line"]; x.fillStyle=C["--muted"]; x.lineWidth=1;
+  const yst=(hi-lo)>3000?1000:500; for(let v=lo;v<=hi;v+=yst){x.beginPath();x.moveTo(pl,ys(v));x.lineTo(pl+gw,ys(v));x.stroke();x.textAlign="right";x.fillText(v,pl-6,ys(v)+3);}
+  const xst=(X1-X0)>60?12:6; x.textAlign="center"; for(let d=Math.ceil(X0/xst)*xst;d<=X1;d+=xst) x.fillText(d,xs(d),pt+gh+14); x.fillText("distance to CELL lip (in)",pl+gw/2,h-4);
+  rows.forEach(q=>{if(!q.w) return; x.globalAlpha=.28; x.fillStyle=C["--good"]; const y1=ys(q.w[1]),y2=ys(q.w[0]); x.beginPath(); x.roundRect?x.roundRect(xs(q.d)-7,y1,14,Math.max(2,y2-y1),4):x.rect(xs(q.d)-7,y1,14,y2-y1); x.fill(); x.globalAlpha=1;});
+  if(fitC){x.save();x.beginPath();x.rect(pl,pt,gw,gh);x.clip();x.strokeStyle=C["--honey"];x.lineWidth=2.5;x.beginPath();const a=fitPts[0].d,b=fitPts[fitPts.length-1].d;
+    for(let d=a;d<=b;d+=0.25){const px=xs(d),py=ys(evalPoly(fitC,d)); d===a?x.moveTo(px,py):x.lineTo(px,py);} x.stroke(); x.restore();}
+  const offs={score:0,short:-2,long:2,bounce:1};
+  store.shots.forEach(s=>{x.beginPath();x.fillStyle=C[RES_COL[s.res]||"--muted"];x.globalAlpha=.85;x.arc(xs(s.d)+offs[s.res]*1.5,ys(s.rpm),4,0,7);x.fill();x.globalAlpha=1;});
+  fitPts.forEach(p=>{x.beginPath();x.strokeStyle=C["--ink"];x.lineWidth=2;x.moveTo(xs(p.d)-7,ys(p.rpm));x.lineTo(xs(p.d)+7,ys(p.rpm));x.stroke();});
+  if(!store.shots.length&&!fitPts.length){x.fillStyle=C["--muted"];x.textAlign="center";x.font="13px IBM Plex Sans, sans-serif";x.fillText("Log test shots to see them here",pl+gw/2,pt+gh/2);}
+}
+$("fitcv").addEventListener("pointermove",e=>{if(!fitGeom) return; const r=$("fitcv").getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; let best=null,bd=14;
+  fitPts.forEach(p=>{const dd=Math.hypot(fitGeom.xs(p.d)-mx,fitGeom.ys(p.rpm)-my); if(dd<bd){bd=dd;best=p;}});
+  const tip=$("fittip"); if(!best){tip.hidden=true;return;}
+  tip.innerHTML=`<b>${best.d} in</b><br>fit point ${Math.round(best.rpm)} rpm<br>window ${best.lo}–${best.hi}${fitC?"<br>formula "+Math.round(evalPoly(fitC,best.d))+" rpm":""}`;
+  tip.hidden=false; tip.style.left=Math.min(r.width-tip.offsetWidth-4,fitGeom.xs(best.d)+12)+"px"; tip.style.top=Math.max(4,my-40)+"px";});
+$("fitcv").addEventListener("pointerleave",()=>$("fittip").hidden=true);
+function renderCode(){
+  const P=fitPts, dmin=P.length?P[0].d:0, dmax=P.length?P[P.length-1].d:0, d=VN("vd","distance"), r=VN("vr","targetRpm");
+  const halves=P.map(p=>(p.hi-p.lo)/2).sort((a,b)=>a-b), tol=halves.length?Math.max(20,Math.round(halves[0]/10)*10):100;
+  $("formula").textContent=fitC?formulaLine(fitC,d,r,fmt):"Not enough data for this fit yet.";
+  $("formnote").textContent=fitC?`Valid from ${dmin} to ${dmax} in · robot: ${robotText()}${formulaDoc?" · a team formula is already saved; saving replaces it":""}`:"";
+  const dn=["","linear","quadratic","cubic"][deg];
+  $("usage").innerHTML=[`<b>Measure the distance the formula expects:</b> horizontal inches from where the ball leaves the hood to the lip of the CELL opening. Correct the AprilTag range for the camera's position.`,
+    `<b>Clip <code>${esc(d)}</code> to ${dmin}–${dmax} in.</b> Outside that range a ${dn} formula is a guess.`,`<b>Paste the formula</b> right after you have <code>${esc(d)}</code>. It gives <code>${esc(r)}</code> in flywheel RPM.`,
+    `<b>Clip the result</b> to what the motor can do.`,`<b>Convert to ticks per second</b> for <code>setVelocity()</code>: RPM × gear ratio (${robot.gear}) × 28 / 60 for a goBILDA 5203.`,
+    `<b>Feed only at speed:</b> the narrowest window here is about ±${tol} rpm, so fire when the measured RPM is within ±${tol}.`].map(x=>`<li>${x}</li>`).join("");
+  $("code").textContent=
+`// --- inside your TeleOp loop ---
+// 1. Distance in inches: launch point -> CELL lip (horizontal)
+double ${d} = getDistanceFromAprilTag();   // your own method, corrected for camera offset
+
+// 2. Stay inside the range the formula was fit on
+${d} = Range.clip(${d}, ${dmin}, ${dmax});
+
+// 3. Paste the team formula here
+// double ${r} = ...;
+
+// 4. Stay inside what the motor can do
+${r} = Range.clip(${r}, 0, 6000);
+
+// 5. RPM -> ticks per second (goBILDA 5203: 28 ticks per motor rev)
+final double GEAR = ${robot.gear};   // motor turns per flywheel turn
+flywheel.setVelocity(${r} * GEAR * 28.0 / 60.0);
+
+// 6. Feed only when the flywheel is at speed
+double measuredRpm = flywheel.getVelocity() * 60.0 / (28.0 * GEAR);
+boolean atSpeed = Math.abs(measuredRpm - ${r}) < ${tol};
+telemetry.addData("distance (in)", ${d});
+telemetry.addData("target rpm", ${r});
+telemetry.addData("ready", atSpeed);
+feeder.setPower(gamepad1.right_bumper && atSpeed ? 1.0 : 0.0);`;
+}
+function copyFrom(srcId,btn,label){const t=$(srcId).textContent;
+  const done=ok=>{btn.textContent=ok?"Copied":"Select and copy";setTimeout(()=>btn.textContent=label,1600);};
+  const sel=()=>{const rg=document.createRange();rg.selectNodeContents($(srcId));const s=getSelection();s.removeAllRanges();s.addRange(rg);};
+  try{navigator.clipboard.writeText(t).then(()=>done(true),()=>{sel();done(false);});}catch(e){sel();done(false);}}
+$("copyf").onclick=e=>copyFrom("formula",e.currentTarget,"Copy"); $("copyx").onclick=e=>copyFrom("code",e.currentTarget,"Copy example");
+
+/* ================= 5 VALIDATE ================= */
+const VRES_COL={made:"--good",short:"--bad",long:"--vx",bounce:"--warn",wide:"--muted"}, VRES_TXT={made:"Made",short:"Short",long:"Long",bounce:"Bounced out",wide:"Wide"};
+function teamRpm(d){if(!formulaDoc||!formulaDoc.coeffs) return null; const dd=clamp(d,formulaDoc.dmin,formulaDoc.dmax); return Math.round(clamp(evalPoly(formulaDoc.coeffs,dd),0,6000)/10)*10;}
+let vaRpmEdited=false;
+$("va-d").addEventListener("input",()=>{vaRpmEdited=false; const r=teamRpm(parseFloat($("va-d").value)); if(r!=null) $("va-rpm").value=r;});
+$("va-rpm").addEventListener("input",()=>{vaRpmEdited=true;});
+document.querySelectorAll("[data-vres]").forEach(b=>{b.setAttribute("data-write",""); b.onclick=async()=>{
+  const d=parseFloat($("va-d").value), rpm=parseFloat($("va-rpm").value);
+  if(!(d>=6&&d<=140)){ $("va-msg").textContent="Enter the distance for this shot."; return; }
+  if(await addRow("validation",{d,rpm:isFinite(rpm)?rpm:null,res:b.dataset.vres,moving:$("va-move").checked})) $("va-msg").textContent=`Logged: ${VRES_TXT[b.dataset.vres].toLowerCase()} at ${d} in.`;
+};});
+$("va-rows").addEventListener("click",e=>{const b=e.target.closest("button[data-del]"); if(b) delRow("validation",b.dataset.del);});
+function renderValidate(){
+  if(formulaDoc&&formulaDoc.coeffs){ $("va-formula").innerHTML=`Team formula: <span class="inline">${esc(formulaLine(formulaDoc.coeffs,"d","rpm","math"))}</span> · valid ${formulaDoc.dmin}–${formulaDoc.dmax} in. The RPM box fills in from it.`;
+    if(!vaRpmEdited){const r=teamRpm(parseFloat($("va-d").value)); if(r!=null) $("va-rpm").value=r;} }
+  else $("va-formula").textContent="No team formula saved yet. Save one in Step 4, or type the RPM you used.";
+  const vs=valStats(), n=vs.n;
+  $("va-kpis").innerHTML=`<div class="kpi"><b>${n}</b><span>shots</span></div><div class="kpi"><b>${n?f1(vs.pct,0)+"%":"–"}</b><span>made</span></div>
+    <div class="kpi"><b>${vs.count("short")}</b><span>short</span></div><div class="kpi"><b>${vs.count("long")}</b><span>long</span></div><div class="kpi"><b>${vs.count("bounce")}</b><span>bounced</span></div><div class="kpi"><b>${vs.count("wide")}</b><span>wide</span></div>`;
+  const rows=[...store.validation].sort((a,b)=>b.at-a.at).slice(0,200);
+  $("va-rows").innerHTML=rows.length?rows.map(s=>`<tr><td class="n">${s.d}</td><td class="n">${s.rpm??"–"}</td><td><span class="chip" style="color:var(${VRES_COL[s.res]||"--muted"})">${VRES_TXT[s.res]||esc(s.res)}</span></td><td>${s.moving?"yes":""}</td><td class="who" data-uid="${esc(s.by||"")}"></td><td><button class="x" data-del="${esc(s.id)}" data-write aria-label="Delete shot">×</button></td></tr>`).join("")
+    :`<tr><td colspan="6" class="muted">No validation shots yet.</td></tr>`;
+  fillNames($("va-rows")); applyWriteState();
+  // diagnosis
+  const tips=[], sh=vs.count("short"), lg=vs.count("long"), bo=vs.count("bounce"), wi=vs.count("wide"), miss=n-vs.made;
+  if(n<20) tips.push(`Log at least 20 shots from 3 or more distance ranges before judging the formula (${n} so far).`);
+  if(n>=20&&vs.pct>=80&&Object.keys(vs.bins).length>=3) tips.push(`<b>Validated.</b> ${f1(vs.pct,0)}% made across ${Object.keys(vs.bins).length} distance ranges. Re-check after any change to the hood, wheel or ball.`);
+  if(miss>=3&&sh>=2*Math.max(1,lg)) tips.push(`<b>Most misses are short.</b> Add about +50 to +100 rpm and re-check. If it keeps happening, the measured η is probably too high: repeat Step 3.`);
+  if(miss>=3&&lg>=2*Math.max(1,sh)) tips.push(`<b>Most misses are long.</b> Take off about 50 to 100 rpm. If it keeps happening, η or spin is probably too low in the profile: repeat Step 3.`);
+  if(miss>=3&&bo/miss>=0.3) tips.push(`<b>Many balls bounce out.</b> They are probably entering while still rising. A steeper hood angle brings them down into the CELL.`);
+  if(miss>=3&&wi/miss>=0.3) tips.push(`<b>Many misses are wide.</b> That's aiming, not RPM: check the robot's heading and the camera's yaw offset.`);
+  const mv=store.validation.filter(x=>x.moving), st=store.validation.filter(x=>!x.moving);
+  if(mv.length>=5&&st.length>=5){const pm=mv.filter(x=>x.res==="made").length/mv.length*100, ps=st.filter(x=>x.res==="made").length/st.length*100;
+    if(ps-pm>=15) tips.push(`<b>Moving shots: ${f1(pm,0)}% vs ${f1(ps,0)}% standing.</b> The robot's speed adds to the ball's. Stop to shoot, or adjust the RPM for driving speed.`);}
+  Object.keys(vs.bins).map(Number).sort((a,b)=>a-b).forEach(b=>{const q=vs.bins[b]; if(q.n>=4&&q.m/q.n<0.8) tips.push(`<b>Weak at ${b}–${b+5} in</b> (${q.m}/${q.n}). Add test shots at this distance in Step 4 and refit.`);});
+  if(!tips.length) tips.push("Keep logging. Patterns show up after about 20 shots.");
+  $("va-diag").innerHTML=tips.map(t=>`<p style="margin:0 0 8px">${t}</p>`).join("");
+  drawVal(vs); renderRail();
+}
+function drawVal(vs){
+  const c=$("vacv"), r=sizeCanvas(c,0.5); if(!r) return; const [w,h]=r, x=c.getContext("2d"), pl=40,pr=10,pt=16,pb=34,gw=w-pl-pr,gh=h-pt-pb;
+  x.clearRect(0,0,w,h); x.fillStyle=C["--field"]; x.fillRect(0,0,w,h);
+  const ys=p=>pt+gh-p/100*gh; x.font="10px IBM Plex Mono, monospace"; x.strokeStyle=C["--line"]; x.fillStyle=C["--muted"];
+  for(let p=0;p<=100;p+=20){x.beginPath();x.moveTo(pl,ys(p));x.lineTo(pl+gw,ys(p));x.stroke();x.textAlign="right";x.fillText(p+"%",pl-6,ys(p)+3);}
+  x.strokeStyle=C["--ink"]; x.setLineDash([4,3]); x.beginPath(); x.moveTo(pl,ys(80)); x.lineTo(pl+gw,ys(80)); x.stroke(); x.setLineDash([]);
+  const bins=Object.keys(vs.bins).map(Number).sort((a,b)=>a-b);
+  if(!bins.length){x.fillStyle=C["--muted"];x.textAlign="center";x.font="13px IBM Plex Sans, sans-serif";x.fillText("Make % by distance appears here",pl+gw/2,pt+gh/2);return;}
+  const slot=gw/bins.length, bw=Math.min(46,slot*0.6);
+  bins.forEach((b,i)=>{const q=vs.bins[b], p=q.m/q.n*100, cx=pl+slot*(i+0.5), y=ys(p);
+    x.fillStyle=C[p>=80?"--good":"--warn"]; x.beginPath(); x.roundRect?x.roundRect(cx-bw/2,y,bw,Math.max(1,pt+gh-y),[4,4,0,0]):x.rect(cx-bw/2,y,bw,pt+gh-y); x.fill();
+    x.fillStyle=C["--ink"]; x.textAlign="center"; x.font="11px IBM Plex Mono, monospace"; x.fillText(`${q.m}/${q.n}`,cx,y-4);
+    x.fillStyle=C["--muted"]; x.font="10px IBM Plex Mono, monospace"; x.fillText(`${b}–${b+5}`,cx,pt+gh+14);});
+  x.fillText("distance (in)",pl+gw/2,h-4);
+}
+
+/* ================= export ================= */
+$("export").onclick=async()=>{
+  const q=v=>{const s=v==null?"":String(v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const lines=["section,field1,field2,field3,field4,field5,time"];
+  lines.push(["robot","angle="+robot.ang,"h0="+robot.h0,"wheel="+robot.wheel,"eta="+robot.eta,"spin="+robot.spinType+":"+robot.spinFactor,""].map(q).join(","));
+  if(formulaDoc&&formulaDoc.coeffs) lines.push(["formula",formulaLine(formulaDoc.coeffs,"d","rpm","math"),"dmin="+formulaDoc.dmin,"dmax="+formulaDoc.dmax,"r2="+formulaDoc.r2,"source="+formulaDoc.source,new Date(formulaDoc.at||0).toISOString()].map(q).join(","));
+  lines.push("speed,rpm,fps,frames,distance_in,turns,time"); store.speeds.forEach(r=>lines.push(["speed",r.rpm,r.fps,r.frames,r.dist,r.turns,new Date(r.at).toISOString()].map(q).join(",")));
+  lines.push("shot,distance_in,rpm,result,,,time"); store.shots.forEach(r=>lines.push(["shot",r.d,r.rpm,r.res,"","",new Date(r.at).toISOString()].map(q).join(",")));
+  lines.push("validation,distance_in,rpm,result,moving,,time"); store.validation.forEach(r=>lines.push(["validation",r.d,r.rpm,r.res,r.moving?"yes":"no","",new Date(r.at).toISOString()].map(q).join(",")));
+  const csv=lines.join("\n");
+  if(downloads){ try{ await downloads.save({filename:"biobuzz-shooter-data.csv",data:csv}); $("ex-msg").textContent=""; return; }catch(e){} }
+  const ta=$("csvout"); ta.value=csv; ta.hidden=false; ta.focus(); ta.select(); $("ex-msg").textContent="Copy the CSV below into a spreadsheet.";
+};
+
+/* ================= boot ================= */
+window.addEventListener("resize",()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>route(false),150);});
+const mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",()=>{mapGrid=null;route(false);});
+new MutationObserver(()=>{mapGrid=null;route(false);}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+readColors(); renderLesson(); renderMissions(); syncInputs(); fillRobotForm(); renderTeamStrip(); renderOverview(); renderRail(); renderMeasure();
+(function primeAim(){const nr=widest(scan(S,10)); if(nr){S.rpm=Math.round((nr[0]+nr[1])/20)*10; syncInputs();}})();
+route(false);
+initData();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>route(false));
+})();
+</script>
+
+</body></html>
